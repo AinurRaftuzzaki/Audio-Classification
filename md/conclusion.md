@@ -23,10 +23,4 @@
 - [FreeSound API](https://freesound.org/docs/api/)
 - [ESC-50 Dataset](https://github.com/karolpiczak/ESC-50)
 
-## Anggota Tim
 
-| Nama | NIM | Peran |
-|------|-----|-------|
-| *Isi nama* | *Isi NIM* | *Isi peran* |
-| *Isi nama* | *Isi NIM* | *Isi peran* |
-| *Isi nama* | *Isi NIM* | *Isi peran* |
