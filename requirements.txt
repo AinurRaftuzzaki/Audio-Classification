@@ -11,7 +11,7 @@ tqdm
 requests
 beautifulsoup4
 yt-dlp
-freesound
+freesound-python
 ipykernel
 jupyter
 plotly
