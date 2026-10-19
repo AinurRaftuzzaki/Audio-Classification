@@ -1,0 +1,51 @@
+# Audio Classification
+
+# Data mentah dan besar
+data/raw/
+data/processed/
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.zip
+
+# Model tersimpan
+models/*.pkl
+models/*.h5
+models/*.pt
+models/*.pth
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Jupyter Book build
+_build/
+_build/.doctrees/
+_build/jupyter_execute/
+_build/.jupyter_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Environment
+.env
+*.env

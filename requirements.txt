@@ -1,0 +1,17 @@
+jupyter-book
+librosa
+soundfile
+noisereduce
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+tqdm
+requests
+beautifulsoup4
+yt-dlp
+freesound
+ipykernel
+jupyter
+plotly
