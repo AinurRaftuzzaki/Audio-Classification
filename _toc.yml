@@ -13,4 +13,5 @@ chapters:
   - file: md/feature-extraction
   - file: md/modeling
   - file: md/evaluation
+  - file: md/deployment
   - file: md/conclusion

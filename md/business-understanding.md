@@ -1,30 +1,35 @@
 # Business Understanding
 
-## Latar Belakang
+## 1. Latar Belakang
 
-Audio classification adalah proses mengidentifikasi dan mengkategorikan suara ke dalam kelas-kelas tertentu menggunakan teknik machine learning. Teknologi ini memiliki berbagai aplikasi nyata seperti pendeteksian suara lingkungan, klasifikasi musik, pengenalan ucapan, dan sistem pemantauan otomatis.
+Kebisingan lingkungan (*environmental noise*) merupakan salah satu faktor pengganggu kualitas kenyamanan, konsentrasi, serta kesehatan pendengaran di ruang publik, perkantoran, dan industri. Identifikasi kebisingan suara (*noise detection*) yang dilakukan secara manual membutuhkan kehadiran manusia dan pemantauan terus-menerus yang tidak efisien.
 
-## Rumusan Masalah
+Seiring perkembangan teknologi pemrosesan sinyal digital (*Digital Signal Processing*) dan *Machine Learning*, proses pengenalan karakteristik akustik dapat diotomatisasi secara cerdas. Dengan mengekstrak representasi fitur fisik dan psikoakustik sinyal audio, komputer dapat membedakan suara berisik (*noisy*) dari suara bersih/tenang (*clean / non-berisik*) secara cepat dan akurat.
 
-> Bagaimana membangun model yang dapat mengklasifikasikan audio secara otomatis ke dalam kategori yang telah ditentukan?
+## 2. Rumusan Masalah
 
-## Tujuan
+1. Bagaimana mengekstrak representasi fitur akustik yang tepat (RMS, Spectral Centroid, ZCR, dan MFCC 13 koefisien) dari sinyal audio mentah?
+2. Bagaimana membangun model *K-Nearest Neighbors* (KNN) yang optimal untuk membedakan kategori suara Berisik dan Non-Berisik?
+3. Bagaimana mengimplementasikan model tersebut ke dalam sebuah sistem aplikasi yang interaktif dan dapat digunakan langsung oleh pengguna (*deployment*)?
 
-- Mengumpulkan dataset audio dari berbagai sumber
-- Melakukan preprocessing dan ekstraksi fitur dari sinyal audio
-- Membangun model klasifikasi yang akurat
-- Mengevaluasi performa model dengan metrik yang tepat
+## 3. Tujuan Proyek
 
-## Manfaat
+- **Ekstraksi Fitur**: Mengekstrak 16 atribut numerik yang merepresentasikan energi sinyal, distribusi frekuensi spektral, dinamika transisi tanda, dan tekstur timbre suara.
+- **Pengembangan Model**: Melatih model *K-Nearest Neighbors* (KNN) dengan tuning hyperparameter $k$, fungsi jarak, dan skema pembobotan.
+- **Validasi Kinerja**: Mengevaluasi model menggunakan metrik *Accuracy*, *Precision*, *Recall*, *F1-Score*, *Confusion Matrix*, dan *ROC Curve*.
+- **Deployment Sistem**: Mengembangkan antarmuka aplikasi web berbasis *Streamlit* yang siap pakai untuk mengunggah audio, menganalisis fitur secara instan, dan menampilkan hasil prediksi.
 
-| Manfaat | Keterangan |
-|---------|-----------|
-| Akademis | Memahami teknik pemrosesan sinyal audio dan machine learning |
-| Praktis | Model dapat digunakan untuk otomatisasi klasifikasi suara |
-| Tim | Kolaborasi dan pembagian tugas dalam proyek data science |
+## 4. Manfaat
 
-## Batasan Masalah
+| Aspek | Manfaat Konkret |
+|---|---|
+| **Sistem Otomasi** | Mendeteksi polusi suara dan kondisi lingkungan bising secara otomatis tanpa operator manusia. |
+| **Kualitas Komunikasi** | Menjadi subsistem pendukung untuk *noise suppression* atau penanda kualitas rekaman audio. |
+| **Akademis & Sains Data** | Memberikan pemahaman praktis implementasi alur CRISP-DM pada pemrosesan sinyal suara. |
 
-- Dataset terbatas pada audio yang dapat dikumpulkan tim
-- Model dibangun menggunakan Python dan library open-source
-- Fokus pada klasifikasi multi-kelas
+## 5. Batasan Masalah
+
+- Dataset difokuskan pada klasifikasi biner dua kelas: **Berisik** dan **Non-Berisik**.
+- Ekstraksi fitur menggunakan tepat 16 atribut numerik (RMS, Spectral Centroid, ZCR, dan 13 koefisien MFCC).
+- Algoritma pembelajaran utama yang digunakan adalah *K-Nearest Neighbors* (KNN).
+- Sistem aplikasi diimplementasikan menggunakan Python dan *Streamlit*.

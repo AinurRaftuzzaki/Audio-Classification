@@ -9,4 +9,5 @@ Berikut adalah struktur dokumentasi proyek Audio Classification:
 5. **Feature Extraction** — Ekstraksi fitur dari sinyal audio
 6. **Modeling** — Pembangunan model klasifikasi
 7. **Evaluation** — Evaluasi performa model
-8. **Conclusion** — Kesimpulan dan saran
+8. **Deployment** — Sistem inferensi aplikasi web Streamlit
+9. **Conclusion** — Kesimpulan dan saran pengembangan lanjutan

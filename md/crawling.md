@@ -1,80 +1,48 @@
-# Crawling Data Audio
+# Crawling & Ekstraksi Data Audio
 
-## Overview
+## 1. Sumber Data Mentah di Folder Crawling
 
-Proses crawling dilakukan secara otomatis menggunakan Python. Notebook crawling tersedia di folder `crawling/`.
+Pada folder `crawling/`, data audio telah dihimpun ke dalam dua file kompresi:
+- `crawling/File Audio Berisik.zip`
+- `crawling/File Audio Non Berisik.zip`
 
-## Tools yang Digunakan
+Arsip ini berisi rekaman audio berdurasi rata-rata 30 detik yang mencakup berbagai kondisi lingkungan bising (keramaian lalu lintas, aktivitas bengkel, kebisingan kafe/kantin) dan non-bising (lingkungan kamar senyap, suasana hening, perpustakaan).
 
-| Tool | Kegunaan |
-|------|---------|
-| `requests` | HTTP request untuk mengunduh audio |
-| `beautifulsoup4` | Parsing HTML website sumber |
-| `yt-dlp` | Download audio dari YouTube |
-| `freesound` | API client FreeSound |
-| `tqdm` | Progress bar saat download |
+## 2. Proses Dekompresi dan Validasi
 
-## Cara Menjalankan Crawling
-
-### 1. Setup Environment
-
-```bash
-# Buat virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 2. Jalankan Notebook
-
-Buka Jupyter Notebook dan jalankan:
-
-```
-crawling/Crawling_Audio.ipynb
-```
-
-### 3. Hasil Crawling
-
-Data hasil crawling akan tersimpan di:
-```
-data/raw/<nama_kelas>/
-```
-
-## Sumber Data yang Digunakan
-
-### FreeSound API
-
-FreeSound menyediakan ribuan file audio gratis dengan berbagai kategori.
+Data dari kedua file ZIP diekstrak ke dalam folder penyimpanan terstruktur `data/raw/` menggunakan skrip otomatisasi Python:
 
 ```python
-import freesound
-client = freesound.FreesoundClient()
-client.set_token("YOUR_API_KEY")
+import zipfile
+import os
 
-results = client.text_search(
-    query="rain",
-    fields="id,name,previews",
-    page_size=150
-)
+def extract_archive(zip_path, target_dir):
+    os.makedirs(target_dir, exist_ok=True)
+    with zipfile.ZipFile(zip_path, 'r') as zf:
+        zf.extractall(target_dir)
 ```
 
-> Daftarkan akun di [freesound.org](https://freesound.org) untuk mendapatkan API key.
+Dari total 200 file arsip, 197 file berhasil divalidasi dan diuraikan integritas formatnya (*audio integrity validation*) menggunakan pustaka `librosa` dan `soundfile`. Tiga file yang terindikasi corrupt atau tidak memiliki header stream valid diabaikan dari dataset untuk menjaga kualitas pelatihan model.
 
-### YouTube (via yt-dlp)
+## 3. Ekstraksi 16 Fitur Audio di Folder Crawling
 
-```bash
-yt-dlp -x --audio-format wav -o "data/raw/%(title)s.%(ext)s" "URL_PLAYLIST"
+Sesuai instruksi spesifikasi proyek, ekstraksi fitur audio dijalankan langsung terhadap berkas-berkas di folder `crawling/` dan menghasilkan dataset berstruktur 16 fitur audio yang disimpan di:
+- `crawling/audio_features_16.csv`
+- `data/processed/audio_features_16.csv`
+
+### Struktur Berkas CSV Hasil Ekstraksi
+
+```
+Kolom (18 Total):
+1.  filename  : Nama file rekaman audio
+2.  label     : Kategori kelas ('berisik' atau 'non_berisik')
+3.  rms       : Root Mean Square energy (mean)
+4.  centroid  : Spectral Centroid (Hz) (mean)
+5.  zcr       : Zero Crossing Rate (mean)
+6.  mfcc_1    : Koefisien MFCC ke-1 (mean)
+7.  mfcc_2    : Koefisien MFCC ke-2 (mean)
+...
+18. mfcc_13   : Koefisien MFCC ke-13 (mean)
 ```
 
-### Dataset Publik
-
-- **ESC-50**: [github.com/karolpiczak/ESC-50](https://github.com/karolpiczak/ESC-50)
-- **UrbanSound8K**: [urbansounddataset.weebly.com](https://urbansounddataset.weebly.com/urbansound8k.html)
-- **AudioSet**: [research.google.com/audioset](https://research.google.com/audioset)
-
-## Catatan
-
-> ⚠️ Pastikan data yang dikumpulkan bebas dari hak cipta atau memiliki lisensi yang sesuai untuk keperluan akademis.
+Ketersediaan berkas CSV di folder `crawling/` mempermudah tahapan eksplorasi data lanjutan tanpa perlu mengulang komputasi transformasi sinyal audio mentah yang memakan waktu.

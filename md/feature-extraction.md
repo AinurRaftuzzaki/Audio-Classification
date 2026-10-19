@@ -1,124 +1,72 @@
-# Feature Extraction
+# Feature Extraction (Ekstraksi 16 Fitur Audio)
 
-## Overview
+## 1. Konsep Dasar Ekstraksi Fitur Audio
 
-Feature extraction adalah proses mengubah sinyal audio mentah menjadi representasi numerik yang dapat digunakan oleh model machine learning.
+Ekstraksi fitur audio adalah proses mengonversi sinyal gelombang suara satu dimensi yang berfluktuasi terhadap waktu menjadi sekumpulan representasi numerik ringkas yang mencerminkan karakteristik fisik dan perseptual sinyal.
 
-## Fitur-Fitur Audio
+Sesuai instruksi proyek, fitur yang diekstrak berjumlah tepat **16 kolom fitur**, yaitu:
+1. **RMS (Root Mean Square)** (1 fitur)
+2. **Spectral Centroid** (1 fitur)
+3. **ZCR (Zero Crossing Rate)** (1 fitur)
+4. **MFCC 13 Koefisien** (`mfcc_1` s/d `mfcc_13`) (13 fitur)
 
-### 1. MFCC (Mel-Frequency Cepstral Coefficients)
+Total: $1 + 1 + 1 + 13 = \mathbf{16\text{ Fitur Akustik}}$.
 
-MFCC adalah fitur paling umum dalam pemrosesan suara. Merepresentasikan karakteristik spektral jangka pendek dari suara.
+---
+
+## 2. Penjelasan Matematis Masing-Masing Fitur
+
+### 1. Root Mean Square (RMS) Energy
+RMS merepresentasikan rata-rata daya atau energi yang terkandung di dalam sinyal audio pada jendela waktu tertentu.
+$$\text{RMS} = \sqrt{\frac{1}{N}\sum_{n=0}^{N-1} |x(n)|^2}$$
+- **Relevansi**: Suara berisik umumnya memiliki energi rata-rata yang lebih tinggi secara konsisten dibandingkan suara yang tenang.
 
 ```python
-import librosa
-import numpy as np
-
-def extract_mfcc(audio, sr, n_mfcc=13):
-    """Ekstrak MFCC dari audio."""
-    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=n_mfcc)
-    # Statistik agregasi
-    features = {
-        'mfcc_mean': np.mean(mfcc, axis=1),
-        'mfcc_std': np.std(mfcc, axis=1),
-        'mfcc_max': np.max(mfcc, axis=1),
-        'mfcc_min': np.min(mfcc, axis=1),
-    }
-    return features
+rms_mean = np.mean(librosa.feature.rms(y=y))
 ```
 
-### 2. Mel Spectrogram
-
-Representasi visual dari spektrum frekuensi yang disesuaikan dengan skala Mel (skala persepsi manusia).
+### 2. Spectral Centroid
+Spectral Centroid menunjukkan "pusat gravitasi" dari spektrum frekuensi audio. Sering diasosiasikan dengan kesan subjektif mengenai "kecerahan" (*brightness*) suara.
+$$\text{Centroid} = \frac{\sum_{k=0}^{K-1} f(k) \cdot S(k)}{\sum_{k=0}^{K-1} S(k)}$$
+di mana $S(k)$ adalah magnitudo spektral pada bin frekuensi $f(k)$.
+- **Relevansi**: Suara berisik (seperti gesekan mesin atau keramaian) mengandung komponen frekuensi tinggi yang melimpah, sehingga nilai centroidnya cenderung lebih tinggi.
 
 ```python
-def extract_mel_spectrogram(audio, sr, n_mels=128):
-    """Ekstrak Mel Spectrogram dari audio."""
-    mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_mels=n_mels)
-    mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
-    return mel_spec_db
+centroid_mean = np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))
 ```
 
 ### 3. Zero Crossing Rate (ZCR)
-
-Tingkat perubahan tanda sinyal — berguna untuk membedakan suara perkusif vs tonal.
-
-```python
-def extract_zcr(audio):
-    """Ekstrak Zero Crossing Rate."""
-    zcr = librosa.feature.zero_crossing_rate(audio)
-    return {
-        'zcr_mean': np.mean(zcr),
-        'zcr_std': np.std(zcr),
-    }
-```
-
-### 4. RMS Energy
-
-Root Mean Square energy — representasi volume/energi audio.
+ZCR mengukur seberapa sering gelombang sinyal berpindah tanda dari positif ke negatif atau sebaliknya dalam suatu interval waktu.
+$$\text{ZCR} = \frac{1}{2(N-1)}\sum_{n=1}^{N-1} |\text{sgn}(x(n)) - \text{sgn}(x(n-1))|$$
+- **Relevansi**: Sangat sensitif terhadap noise perkusif, desis (*hiss*), dan suara berfrekuensi tinggi.
 
 ```python
-def extract_rms(audio):
-    """Ekstrak RMS Energy."""
-    rms = librosa.feature.rms(y=audio)
-    return {
-        'rms_mean': np.mean(rms),
-        'rms_std': np.std(rms),
-        'rms_max': np.max(rms),
-    }
+zcr_mean = np.mean(librosa.feature.zero_crossing_rate(y=y))
 ```
 
-### 5. Chroma Features
+### 4. Mel-Frequency Cepstral Coefficients (13 Koefisien MFCC)
+MFCC merupakan fitur standar paling penting dalam pemrosesan suara modern. MFCC memodelkan karakteristik vokal dan timbre suara manusia dengan memetakan frekuensi Hertz ke dalam skala Mel non-linear:
+$$m = 2595 \log_{10}\left(1 + \frac{f}{700}\right)$$
 
-Merepresentasikan energi pada 12 pitch class (nada musik).
+Tahapan komputasi 13 koefisien MFCC:
+1. Membagi sinyal ke dalam frame jendela Hamming.
+2. Menghitung *Fast Fourier Transform* (FFT) dari tiap frame.
+3. Menerapkan filter bank Mel berbentuk segitiga (*Mel triangular filterbank*).
+4. Menghitung logaritma dari daya spektrum pada tiap filter Mel.
+5. Menjalankan *Discrete Cosine Transform* (DCT) untuk menghasilkan 13 koefisien cepstral utama:
+$$c_n = \sum_{m=0}^{M-1} \log(S_m) \cos\left[\frac{\pi n}{M}\left(m + \frac{1}{2}\right)\right], \quad n=1, 2, \dots, 13$$
 
 ```python
-def extract_chroma(audio, sr):
-    """Ekstrak Chroma features."""
-    chroma = librosa.feature.chroma_stft(y=audio, sr=sr)
-    return {
-        'chroma_mean': np.mean(chroma, axis=1),
-        'chroma_std': np.std(chroma, axis=1),
-    }
+mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+mfcc_means = [np.mean(c) for c in mfcc]  # 13 nilai koefisien rata-rata
 ```
 
-### 6. Spectral Features
+---
 
-```python
-def extract_spectral_features(audio, sr):
-    """Ekstrak berbagai fitur spektral."""
-    return {
-        'spectral_centroid': np.mean(librosa.feature.spectral_centroid(y=audio, sr=sr)),
-        'spectral_bandwidth': np.mean(librosa.feature.spectral_bandwidth(y=audio, sr=sr)),
-        'spectral_rolloff': np.mean(librosa.feature.spectral_rolloff(y=audio, sr=sr)),
-        'spectral_contrast': np.mean(librosa.feature.spectral_contrast(y=audio, sr=sr)),
-    }
-```
+## 3. Matriks Korelasi Antar 16 Fitur
 
-## Pipeline Feature Extraction
+Untuk memahami interaksi multivariat antar fitur, matriks korelasi Pearson dihitung pada seluruh 197 data sampel:
 
-```python
-def extract_all_features(audio_path, sr=22050):
-    """Ekstrak semua fitur dari satu file audio."""
-    audio, sr = librosa.load(audio_path, sr=sr)
-    
-    features = {}
-    features.update(extract_mfcc(audio, sr))
-    features.update(extract_zcr(audio))
-    features.update(extract_rms(audio))
-    features.update(extract_chroma(audio, sr))
-    features.update(extract_spectral_features(audio, sr))
-    
-    return features
-```
+![Korelasi 16 Fitur](../images/correlation_matrix.png)
 
-## Ringkasan Fitur
-
-| Fitur | Dimensi | Kegunaan |
-|-------|---------|---------|
-| MFCC (13) | 13 × stats | Karakteristik timbral |
-| Mel Spectrogram | n_mels | Pola spektral |
-| ZCR | 2 | Karakteristik perkusif |
-| RMS | 3 | Volume/energi |
-| Chroma | 12 × stats | Pitch/harmoni |
-| Spectral | 4 | Karakter frekuensi |
+Terlihat bahwa fitur `rms`, `centroid`, dan beberapa koefisien `mfcc` memiliki hubungan korelasi yang saling melengkapi dalam mengidentifikasi pola kebisingan.

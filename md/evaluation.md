@@ -1,66 +1,59 @@
 # Evaluasi Model
 
-## Overview
+Evaluasi model dilakukan secara ketat pada data pengujian terpisah (*unseen test set*) sebanyak **40 sampel audio** (20 sampel Berisik dan 20 sampel Non-Berisik) yang tidak pernah dilihat oleh model selama proses pelatihan.
 
-> **Catatan:** Bagian ini akan diperbarui setelah eksperimen selesai.
+---
 
-## Metrik Evaluasi
+## 1. Ringkasan Metrik Kinerja
 
-### Accuracy
+Berikut adalah rekapitulasi performa model KNN terbaik pada data pengujian:
 
-Persentase prediksi yang benar dari total prediksi.
+| Metrik Evaluasi | Nilai Hasil Uji | Keterangan |
+|---|---|---|
+| **Akurasi (Accuracy)** | **92.50%** | 37 dari 40 sampel diprediksi dengan benar secara tepat. |
+| **Presisi (Precision - Berisik)** | **94.74%** | Dari semua yang diprediksi berisik, 94.7% benar-benar berisik. |
+| **Recall (Sensitivity - Berisik)** | **90.00%** | Model sukses menjaring 90.0% dari seluruh audio berisik. |
+| **F1-Score (Berisik)** | **92.31%** | Keseimbangan harmonis antara presisi dan sensitivitas deteksi. |
+| **ROC AUC Score** | **0.992** | Daya diskriminasi pemisahan kelas mendekati nilai sempurna (1.0). |
 
-$$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}$$
+---
 
-### Precision
+## 2. Classification Report Lengkap
 
-Dari semua yang diprediksi positif, berapa yang benar-benar positif.
+```
+              precision    recall  f1-score   support
 
-$$\text{Precision} = \frac{TP}{TP + FP}$$
+     berisik       0.95      0.90      0.92        20
+ non_berisik       0.90      0.95      0.93        20
 
-### Recall (Sensitivity)
-
-Dari semua yang benar-benar positif, berapa yang berhasil diprediksi.
-
-$$\text{Recall} = \frac{TP}{TP + FN}$$
-
-### F1-Score
-
-Harmonic mean dari Precision dan Recall.
-
-$$\text{F1} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$$
-
-## Confusion Matrix
-
-```python
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
-
-cm = confusion_matrix(y_test, y_pred)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
-disp.plot(cmap='Blues')
-plt.title('Confusion Matrix')
-plt.tight_layout()
-plt.savefig('../images/confusion_matrix.png', dpi=150)
-plt.show()
+    accuracy                           0.93        40
+   macro avg       0.93      0.93      0.92        40
+weighted avg       0.93      0.93      0.92        40
 ```
 
-## Hasil Evaluasi
+---
 
-*Akan diisi setelah eksperimen selesai.*
+## 3. Analisis Confusion Matrix
 
-| Model | Accuracy | Precision | Recall | F1-Score |
-|-------|----------|-----------|--------|----------|
-| KNN | *TBD* | *TBD* | *TBD* | *TBD* |
-| SVM | *TBD* | *TBD* | *TBD* | *TBD* |
-| Random Forest | *TBD* | *TBD* | *TBD* | *TBD* |
-| CNN | *TBD* | *TBD* | *TBD* | *TBD* |
+Confusion Matrix merinci distribusi klasifikasi benar dan salah:
 
-## Cross-Validation
+| | Prediksi: Berisik | Prediksi: Non-Berisik |
+|---|---|---|
+| **Aktual: Berisik** | **18 (True Positive)** | 2 (False Negative) |
+| **Aktual: Non-Berisik** | 1 (False Positive) | **19 (True Negative)** |
 
-```python
-from sklearn.model_selection import cross_val_score
+![Confusion Matrix](../images/confusion_matrix.png)
 
-scores = cross_val_score(model, X, y, cv=5, scoring='f1_macro')
-print(f"CV F1-Score: {scores.mean():.4f} ± {scores.std():.4f}")
-```
+Hanya terdapat 3 kasus salah prediksi dari 40 sampel:
+- 2 sampel berisik diprediksi sebagai non-berisik (rekaman berisik dengan jeda hening dominan).
+- 1 sampel non-berisik diprediksi sebagai berisik (rekaman tenang dengan lonjakan suara perkusif sesaat).
+
+---
+
+## 4. Kurva Karakteristik Operasi Penerima (ROC Curve)
+
+Kurva ROC menggambarkan *trade-off* antara *True Positive Rate* (TPR) dan *False Positive Rate* (FPR) pada berbagai variasi ambang batas (*threshold*):
+
+![Kurva ROC](../images/roc_curve.png)
+
+Dengan nilai **Area Under Curve (AUC) = 0.992**, model menunjukkan reliabilitas klasifikasi yang sangat tangguh untuk diimplementasikan ke dalam aplikasi nyata.

@@ -1,92 +1,61 @@
-# Modeling
+# Modeling (Klasifikasi K-Nearest Neighbors)
 
-## Overview
+## 1. Konsep Algoritma K-Nearest Neighbors (KNN)
 
-> **Catatan:** Bagian ini akan diperbarui setelah eksperimen modeling selesai.
+*K-Nearest Neighbors* (KNN) adalah algoritma *supervised learning* berbasis instans (*instance-based learning* atau *lazy learning*). Algoritma ini tidak membentuk fungsi parametrik eksplisit selama proses pelatihan, melainkan menyimpan seluruh titik data pelatihan yang telah diskalakan di dalam memori.
 
-Proses modeling meliputi pemilihan algoritma, training, dan tuning hyperparameter.
+Saat ada data uji baru $\mathbf{x}_{\text{baru}}$ dengan 16 dimensi fitur:
+1. Menghitung jarak antara $\mathbf{x}_{\text{baru}}$ terhadap seluruh titik data pelatihan $\mathbf{x}_i \in \mathcal{D}_{\text{train}}$.
+2. Memilih $k$ tetangga dengan jarak terpendek.
+3. Melakukan pemungutan suara terbanyak (*majority voting*) atau pembobotan jarak (*distance weighting*) untuk menentukan prediksi kelas akhir.
 
-## Algoritma yang Dipertimbangkan
+---
 
-### Machine Learning Klasik
+## 2. Metrik Jarak yang Digunakan
 
-| Algoritma | Kelebihan | Kekurangan |
-|-----------|-----------|-----------|
-| K-Nearest Neighbors (KNN) | Sederhana, tidak perlu training | Lambat saat prediksi, sensitif terhadap skala |
-| Support Vector Machine (SVM) | Efektif di high-dimensional space | Lambat untuk dataset besar |
-| Random Forest | Robust, menangani noise dengan baik | Kurang interpretable |
-| Gradient Boosting | Akurasi tinggi | Perlu tuning yang banyak |
+### a. Jarak Euclidean
+Jarak garis lurus standar dalam ruang berdimensi 16:
+$$d_{\text{Euclidean}}(\mathbf{x}, \mathbf{z}) = \sqrt{\sum_{i=1}^{16} (x_i - z_i)^2}$$
 
-### Deep Learning
+### b. Jarak Manhattan (City Block)
+Jumlah selisih nilai absolut di tiap dimensi:
+$$d_{\text{Manhattan}}(\mathbf{x}, \mathbf{z}) = \sum_{i=1}^{16} |x_i - z_i|$$
 
-| Algoritma | Kelebihan | Kekurangan |
-|-----------|-----------|-----------|
-| CNN (Convolutional Neural Network) | Unggul untuk Mel Spectrogram | Butuh banyak data |
-| LSTM / RNN | Baik untuk data sekuensial | Lambat training |
-| CNN + LSTM | Gabungan keduanya | Kompleks |
+---
 
-## Template Kode Model
+## 3. Optimasi Hyperparameter (Grid Search & K-Fold CV)
 
-### KNN
+Untuk menentukan konfigurasi model terbaik, dilakukan pencarian kisi (*GridSearchCV*) dikombinasikan dengan **5-Fold Stratified Cross-Validation** pada data pelatihan (157 sampel):
+
+Ruang parameter yang diuji:
+- **Nilai $k$**: Bilangan ganjil antara 1 hingga 21 ($1, 3, 5, 7, \dots, 21$) untuk menghindari hasil suara seimbang (*tie*).
+- **Fungsi Bobot (*Weights*)**: `'uniform'` (bobot sama) vs `'distance'` (bobot berbanding terbalik dengan jarak).
+- **Metrik Jarak**: `'euclidean'` vs `'manhattan'`.
 
 ```python
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
+param_grid = {
+    'n_neighbors': [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21],
+    'weights': ['uniform', 'distance'],
+    'metric': ['euclidean', 'manhattan']
+}
 
-# Scaling
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-# Model
-model = KNeighborsClassifier(n_neighbors=5)
-model.fit(X_train, y_train)
-
-y_pred = model.predict(X_test)
-print(classification_report(y_test, y_pred))
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+grid_search = GridSearchCV(KNeighborsClassifier(), param_grid, cv=cv, scoring='accuracy')
+grid_search.fit(X_train_scaled, y_train)
 ```
 
-### SVM
+### Hasil Hyperparameter Terbaik
 
-```python
-from sklearn.svm import SVC
+| Parameter | Nilai Terbaik |
+|---|---|
+| **$k$ (Jumlah Tetangga)** | **1** |
+| **Fungsi Bobot** | **Uniform** |
+| **Metrik Jarak** | **Euclidean** |
+| **Mean CV Accuracy** | **85.99%** |
 
-model = SVC(kernel='rbf', C=10, gamma='scale', random_state=42)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-```
+![Kurva Tuning K](../images/knn_k_accuracy.png)
 
-### CNN (untuk Mel Spectrogram)
-
-```python
-import tensorflow as tf
-from tensorflow import keras
-
-model = keras.Sequential([
-    keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(128, 128, 1)),
-    keras.layers.MaxPooling2D(2, 2),
-    keras.layers.Conv2D(64, (3,3), activation='relu'),
-    keras.layers.MaxPooling2D(2, 2),
-    keras.layers.Flatten(),
-    keras.layers.Dense(128, activation='relu'),
-    keras.layers.Dropout(0.5),
-    keras.layers.Dense(num_classes, activation='softmax')
-])
-
-model.compile(
-    optimizer='adam',
-    loss='sparse_categorical_crossentropy',
-    metrics=['accuracy']
-)
-```
-
-## Hasil Eksperimen
-
-*Akan diisi setelah eksperimen modeling selesai.*
+Hasil tuning menunjukkan bahwa tetangga terdekat terdekat ($k=1$) memberikan batas keputusan (*decision boundary*) yang paling tajam dan representatif pada ruang fitur akustik 16 dimensi yang telah distandarisasi Z-score.
