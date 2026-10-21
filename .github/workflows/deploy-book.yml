@@ -17,17 +17,27 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install Jupyter Book
         run: |
+          pip install --upgrade pip
           pip install jupyter-book
-          pip install -r requirements.txt
 
       - name: Build Jupyter Book
         run: jupyter-book build .
 
-      - name: Copy additional HTML assets to build output
+      - name: Verify build output
+        run: |
+          if [ ! -f "_build/html/index.html" ]; then
+            echo "ERROR: Build failed - index.html not found in _build/html/"
+            ls -la _build/html/ || echo "Directory is empty or missing"
+            exit 1
+          fi
+          echo "Build successful! Files in _build/html:"
+          ls _build/html/
+
+      - name: Copy additional HTML assets
         run: |
           mkdir -p _build/html/md
           cp md/*.html _build/html/md/ 2>/dev/null || true
