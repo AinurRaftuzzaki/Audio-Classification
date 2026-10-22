@@ -27,6 +27,17 @@ jobs:
       - name: Build Jupyter Book
         run: jupyter-book build .
 
+      - name: Create root index redirect
+        run: |
+          if [ ! -f "_build/html/index.html" ]; then
+            echo '<meta http-equiv="Refresh" content="0; url=md/intro.html" />' > _build/html/index.html
+          fi
+
+      - name: Copy additional HTML assets
+        run: |
+          mkdir -p _build/html/md
+          cp md/*.html _build/html/md/ 2>/dev/null || true
+
       - name: Verify build output
         run: |
           if [ ! -f "_build/html/index.html" ]; then
@@ -36,11 +47,6 @@ jobs:
           fi
           echo "Build successful! Files in _build/html:"
           ls _build/html/
-
-      - name: Copy additional HTML assets
-        run: |
-          mkdir -p _build/html/md
-          cp md/*.html _build/html/md/ 2>/dev/null || true
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
