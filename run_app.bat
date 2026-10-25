@@ -1,15 +1,20 @@
 @echo off
+title Audio Surveillance System Launcher
 echo ========================================================
-echo   LIVE AUDIO CLASSIFICATION SYSTEM (KNN & 16 FITUR)
+echo   AUDIO SURVEILLANCE SYSTEM (FASTAPI + RANDOM FOREST)
 echo ========================================================
-echo [1/2] Menjalankan Live Audio Server (Background)...
-start /b python live_server.py
+echo.
 
-echo [2/2] Menjalankan Dashboard Streamlit...
+echo [1/2] Menjalankan Backend API (FastAPI + Uvicorn)...
+start "Backend Server (FastAPI)" cmd /k "cd Backend && uvicorn main:app --reload --host 127.0.0.1 --port 8000"
+timeout /t 3 /nobreak >nul
+
+echo [2/2] Menjalankan Frontend Client (React + Vite)...
 echo.
-echo Akses Sistem:
-echo  - Live Audio Real-Time Monitoring: http://localhost:5000
-echo  - Dashboard Lengkap (Streamlit)  : http://localhost:8501
+echo Akses Antarmuka:
+echo  - Frontend Dashboard : http://localhost:5173
+echo  - Backend API Docs   : http://127.0.0.1:8000/docs
+echo  - WebSocket Endpoint : ws://127.0.0.1:8000/ws/audio
 echo.
-streamlit run app.py
-pause
+
+cd Frontend\vite-project && npm run dev

@@ -28,29 +28,46 @@ export function App() {
   const lastAlertTimeRef = useRef<number>(0);
 
   const SAMPLE_RATE = 22050;
-  const CHUNK_SIZE = SAMPLE_RATE * 1; // 1 Detik
+  const AUDIO_DURATION_SEC = 3; // Jendela waktu 3 detik sesuai spesifikasi model
+  const CHUNK_SIZE = SAMPLE_RATE * AUDIO_DURATION_SEC; // 66.150 sampel (22050 * 3)
 
-  // Generator Suara Buzzer
+  // Generator Suara Buzzer (Web Audio API Synthesizer)
   const playAlarm = useCallback(() => {
     const now = Date.now();
-    if (now - lastAlertTimeRef.current < 1000) return;
+    // Beri jeda minimal 1.5 detik antar alarm agar suara tidak saling bertumpuk kasar
+    if (now - lastAlertTimeRef.current < 1500) return;
     lastAlertTimeRef.current = now;
 
     try {
       const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Proteksi browser autoplay policy: jika audio context ditangguhkan, aktifkan kembali
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+
+      // Karakter suara sawtooth untuk efek alarm peringatan yang tajam dan jelas
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(900, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      
+      // Frekuensi meluncur dari 880 Hz (A5) turun ke 440 Hz (A4) selama 0.3 detik
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+
+      // Volume envelope: mulai dari 30% lalu meluruh (fade out) perlahan ke 0.001
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+
+      // Hubungkan sirkuit audio: Oscillator -> Gain -> Output Speaker
       osc.connect(gain);
       gain.connect(ctx.destination);
+
       osc.start();
-      osc.stop(ctx.currentTime + 0.25);
+      osc.stop(ctx.currentTime + 0.3);
     } catch (e) {
-      console.error("Buzzer error:", e);
+      console.error("[Buzzer] Terjadi kesalahan saat membunyikan alarm:", e);
     }
   }, []);
 
@@ -69,36 +86,53 @@ export function App() {
     try {
       setConnectionStatus('connecting');
       
-      // 1. Inisialisasi WebSocket
+      // 1. Inisialisasi WebSocket dengan proteksi error & parsing
       const ws = new WebSocket('ws://127.0.0.1:8000/ws/audio');
       wsRef.current = ws;
 
-      ws.onopen = () => setConnectionStatus('connected');
-      ws.onclose = () => {
+      ws.onopen = () => {
+        console.log('[WebSocket] Terhubung ke server audio.');
+        setConnectionStatus('connected');
+      };
+
+      ws.onerror = (err) => {
+        console.error('[WebSocket] Kesalahan koneksi:', err);
+        setConnectionStatus('error');
+      };
+
+      ws.onclose = (event) => {
+        console.warn('[WebSocket] Koneksi ditutup. Kode:', event.code);
         setConnectionStatus('disconnected');
         stopMonitoring();
       };
       
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.error) return;
-
-        setCurrentFeatures(data.features);
-
-        if (data.label === 'berisik') {
-          safeCountRef.current = 0; // Reset pendingin
-          setCurrentLabel('berisik');
-          setCurrentConfidence(data.confidence);
-          playAlarm();
-          addLog('berisik', data.confidence, data.features.rms);
-        } else {
-          safeCountRef.current += 1;
-          // Cooldown: Matikan alarm hanya jika 3 detik berturut-turut aman
-          if (safeCountRef.current >= 3) {
-            setCurrentLabel('non_berisik');
-            setCurrentConfidence(data.confidence);
-            addLog('non_berisik', data.confidence, data.features.rms);
+        try {
+          const data = JSON.parse(event.data);
+          if (data.error) {
+            console.warn('[Server Warning]:', data.error);
+            return;
           }
+
+          setCurrentFeatures(data.features);
+
+          if (data.label === 'berisik') {
+            safeCountRef.current = 0; // Reset pendingin
+            setCurrentLabel('berisik');
+            setCurrentConfidence(data.confidence);
+            playAlarm();
+            addLog('berisik', data.confidence, data.features.rms);
+          } else {
+            safeCountRef.current += 1;
+            // Cooldown: Matikan alarm / ubah status jika kondisi aman terdeteksi
+            if (safeCountRef.current >= 1) {
+              setCurrentLabel('non_berisik');
+              setCurrentConfidence(data.confidence);
+              addLog('non_berisik', data.confidence, data.features.rms);
+            }
+          }
+        } catch (parseError) {
+          console.error('[WebSocket] Gagal mem-parse respon JSON:', parseError);
         }
       };
 
@@ -135,7 +169,7 @@ export function App() {
         analyser.getByteTimeDomainData(dataArray);
         setAudioData(dataArray);
 
-        // Kirim setiap 1 Detik
+        // Kirim setiap 3 Detik (saat mencapai CHUNK_SIZE = 66.150 sampel)
         if (totalLength >= CHUNK_SIZE) {
           const mergedBuffer = new Float32Array(totalLength);
           let offset = 0;
