@@ -196,22 +196,6 @@ elif menu == "🧠 Kinerja & Evaluasi Model RF":
 # ==============================================================================
 # MENU 4: METODOLOGI
 # ==============================================================================
-elif menu == "📖 Metodologi & Alur CRISP-DM":
-    st.markdown('<div class="main-header">📖 Metodologi & Alur Kerja CRISP-DM</div>', unsafe_allow_html=True)
-    st.markdown("""
-    ### 1. Business Understanding
-    - **Tujuan**: Membangun model machine learning yang dapat mengklasifikasikan audio menjadi kategori **Berisik** atau **Non-Berisik** secara langsung.
-    
-    ### 2. Klasifikasi dengan Random Forest
-    Algoritma Random Forest bekerja dengan membangun banyak pohon keputusan (Decision Trees) pada saat pelatihan dan mengeluarkan kelas yang merupakan modus dari kelas masing-masing pohon (klasifikasi).
-    - Model menggunakan 100 pohon keputusan (`n_estimators=100`).
-    - Robust terhadap *overfitting* dan sangat baik dalam menangani pola non-linear pada fitur ekstraksi audio (seperti MFCC).
-    
-    ### 3. Deployment Sistem
-    Sistem dideploy menggunakan arsitektur *microservices* ringan:
-    - **Live Streaming Audio Surveillance** (Flask) membaca input mikrofon, mengekstrak fitur setiap beberapa detik, dan mengklasifikasi.
-    - **Dashboard Streamlit** sebagai antarmuka pemantauan dan analisis.
-    """)
 
 elif menu == "📊 Eksplorasi Dataset 16 Fitur":
     st.markdown('<div class="main-header">📊 Eksplorasi Dataset 16 Fitur Audio</div>', unsafe_allow_html=True)
