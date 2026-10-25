@@ -28,8 +28,8 @@ export function App() {
   const lastAlertTimeRef = useRef<number>(0);
 
   const SAMPLE_RATE = 22050;
-  const AUDIO_DURATION_SEC = 3; // Jendela waktu 3 detik sesuai spesifikasi model
-  const CHUNK_SIZE = SAMPLE_RATE * AUDIO_DURATION_SEC; // 66.150 sampel (22050 * 3)
+  const AUDIO_DURATION_SEC = 1; // Jendela waktu 1 detik
+  const CHUNK_SIZE = SAMPLE_RATE * AUDIO_DURATION_SEC; // 22.050 sampel
 
   // Generator Suara Buzzer (Web Audio API Synthesizer)
   const playAlarm = useCallback(() => {
@@ -124,8 +124,8 @@ export function App() {
             addLog('berisik', data.confidence, data.features.rms);
           } else {
             safeCountRef.current += 1;
-            // Cooldown: Matikan alarm / ubah status jika kondisi aman terdeteksi
-            if (safeCountRef.current >= 1) {
+            // Cooldown: Matikan alarm / ubah status setelah menerima 3x respons aman (3 detik)
+            if (safeCountRef.current >= 3) {
               setCurrentLabel('non_berisik');
               setCurrentConfidence(data.confidence);
               addLog('non_berisik', data.confidence, data.features.rms);
@@ -169,7 +169,7 @@ export function App() {
         analyser.getByteTimeDomainData(dataArray);
         setAudioData(dataArray);
 
-        // Kirim setiap 3 Detik (saat mencapai CHUNK_SIZE = 66.150 sampel)
+        // Kirim setiap 1 Detik (saat mencapai CHUNK_SIZE = 22.050 sampel)
         if (totalLength >= CHUNK_SIZE) {
           const mergedBuffer = new Float32Array(totalLength);
           let offset = 0;
