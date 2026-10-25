@@ -1,0 +1,705 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Business Understanding &#8212; Audio Classification</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'business-understanding';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Audio Classification</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1 current active">
+                <a class="reference internal" href="#">
+                    Business Understanding
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/AinurRaftuzzaki/Audio-Classification" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/AinurRaftuzzaki/Audio-Classification/issues/new?title=Issue%20on%20page%20%2Fbusiness-understanding.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/business-understanding.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Business Understanding</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#latar-belakang">1. Latar Belakang</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rumusan-masalah">2. Rumusan Masalah</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tujuan-proyek">3. Tujuan Proyek</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gambaran-umum-dan-cara-kerja-sistem">4. Gambaran Umum dan Cara Kerja Sistem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#teknologi-framework-dan-library">5. Teknologi, Framework, dan Library</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frontend">5.1 Frontend</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backend">5.2 Backend</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model-dan-artefak-machine-learning">5.3 Model dan Artefak Machine Learning</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manfaat">6. Manfaat</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batasan-masalah">7. Batasan Masalah</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kriteria-keberhasilan">8. Kriteria Keberhasilan</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="business-understanding">
+<h1>Business Understanding<a class="headerlink" href="#business-understanding" title="Link to this heading">#</a></h1>
+<section id="latar-belakang">
+<h2>1. Latar Belakang<a class="headerlink" href="#latar-belakang" title="Link to this heading">#</a></h2>
+<p>Kebisingan lingkungan (<em>environmental noise</em>) merupakan salah satu faktor yang dapat mengganggu kenyamanan, konsentrasi, komunikasi, serta kualitas lingkungan di berbagai area, seperti ruang publik, perkantoran, fasilitas pendidikan, dan kawasan industri. Pemantauan kebisingan secara konvensional yang mengandalkan pengamatan manusia membutuhkan perhatian secara terus-menerus dan berpotensi mengalami keterlambatan dalam mengenali kondisi suara yang mengganggu.</p>
+<p>Perkembangan teknologi Pemrosesan Sinyal Digital (<em>Digital Signal Processing</em>) dan <em>Machine Learning</em> memungkinkan proses pengenalan karakteristik suara dilakukan secara otomatis. Melalui pendekatan tersebut, sistem dapat memanfaatkan sinyal audio sebagai data masukan, mengekstrak karakteristik akustik, dan mengklasifikasikan kondisi lingkungan berdasarkan pola yang dipelajari oleh model.</p>
+<p>Proyek <strong>Audio Surveillance System</strong> dikembangkan sebagai sistem pemantauan suara secara waktu nyata (<em>real-time</em>). Sistem menggunakan mikrofon pada peramban untuk menangkap suara lingkungan, kemudian mengirimkan data audio ke server untuk dianalisis. Server mengekstrak fitur akustik dan menggunakan model <em>Random Forest</em> untuk mengklasifikasikan suara ke dalam dua kategori, yaitu <strong>Berisik</strong> dan <strong>Non-Berisik</strong>.</p>
+<p>Hasil klasifikasi dikirimkan kembali ke antarmuka pengguna untuk ditampilkan dalam bentuk indikator status, metrik akustik, visualisasi gelombang suara (<em>waveform</em>), dan log aktivitas deteksi. Ketika kondisi berisik terdeteksi, sistem juga dirancang untuk memberikan peringatan suara kepada pengguna.</p>
+<p>Dengan mengintegrasikan pengolahan audio, pembelajaran mesin, komunikasi WebSocket, dan dashboard interaktif, sistem ini diharapkan dapat membantu pengguna mengenali kondisi kebisingan lingkungan secara lebih cepat dan praktis.</p>
+</section>
+<section id="rumusan-masalah">
+<h2>2. Rumusan Masalah<a class="headerlink" href="#rumusan-masalah" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Bagaimana menangkap dan mengirimkan data audio dari mikrofon peramban ke server secara berkelanjutan?</p></li>
+<li><p>Bagaimana mengekstrak 16 fitur akustik yang terdiri atas RMS, Spectral Centroid, Zero Crossing Rate, dan 13 koefisien MFCC secara konsisten?</p></li>
+<li><p>Bagaimana memanfaatkan model <em>Machine Learning</em> berbasis Random Forest untuk mengklasifikasikan suara ke dalam kategori Berisik dan Non-Berisik?</p></li>
+<li><p>Bagaimana mengintegrasikan proses pengambilan audio, ekstraksi fitur, inferensi model, dan pengiriman hasil klasifikasi dalam sistem pemantauan waktu nyata?</p></li>
+<li><p>Bagaimana menyajikan hasil pemantauan melalui dashboard yang informatif, termasuk status deteksi, metrik akustik, visualisasi gelombang audio, log aktivitas, dan peringatan suara?</p></li>
+</ol>
+</section>
+<section id="tujuan-proyek">
+<h2>3. Tujuan Proyek<a class="headerlink" href="#tujuan-proyek" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Pengambilan dan Transmisi Audio:</strong> Mengambil audio lingkungan melalui mikrofon peramban dan mengirimkan potongan data audio ke server menggunakan WebSocket.</p></li>
+<li><p><strong>Ekstraksi Fitur Akustik:</strong> Menghasilkan 16 fitur numerik yang terdiri atas RMS, Spectral Centroid, Zero Crossing Rate, dan 13 koefisien MFCC.</p></li>
+<li><p><strong>Pengembangan Model:</strong> Menggunakan model klasifikasi Random Forest untuk membedakan kondisi suara Berisik dan Non-Berisik.</p></li>
+<li><p><strong>Validasi Kinerja:</strong> Mengevaluasi kemampuan klasifikasi menggunakan metrik Accuracy, Precision, Recall, F1-Score, dan Confusion Matrix.</p></li>
+<li><p><strong>Pengembangan Dashboard:</strong> Menyediakan antarmuka yang menampilkan status sistem, indikator hasil deteksi, metrik akustik, visualisasi gelombang audio, dan log aktivitas.</p></li>
+<li><p><strong>Integrasi Sistem:</strong> Menghubungkan frontend dan backend melalui WebSocket agar data audio dapat diproses dan hasil prediksi dapat dikirimkan kembali tanpa harus melakukan permintaan HTTP berulang.</p></li>
+<li><p><strong>Peringatan Kebisingan:</strong> Menyediakan mekanisme peringatan suara ketika sistem mendeteksi kondisi Berisik.</p></li>
+</ul>
+</section>
+<section id="gambaran-umum-dan-cara-kerja-sistem">
+<h2>4. Gambaran Umum dan Cara Kerja Sistem<a class="headerlink" href="#gambaran-umum-dan-cara-kerja-sistem" title="Link to this heading">#</a></h2>
+<p>Audio Surveillance System menggunakan arsitektur <em>client-server</em> yang memisahkan antarmuka pengguna dari proses pengolahan audio dan klasifikasi. Frontend bertanggung jawab terhadap pengambilan audio dari mikrofon dan penyajian informasi kepada pengguna, sedangkan backend bertanggung jawab terhadap ekstraksi fitur dan inferensi model.</p>
+<p>Alur kerja sistem adalah sebagai berikut:</p>
+<ol class="arabic simple">
+<li><p><strong>Inisialisasi pemantauan:</strong> Pengguna membuka dashboard dan menekan tombol untuk memulai pemantauan suara.</p></li>
+<li><p><strong>Pengambilan audio:</strong> Peramban meminta izin akses mikrofon dan mengambil sinyal audio menggunakan Web Audio API.</p></li>
+<li><p><strong>Pembagian data audio:</strong> Audio dikumpulkan menjadi potongan data (<em>audio chunks</em>) untuk dikirimkan ke server. Sistem dirancang menggunakan jendela audio sekitar tiga detik untuk setiap proses analisis.</p></li>
+<li><p><strong>Transmisi data:</strong> Frontend mengirimkan data audio ke backend melalui koneksi WebSocket.</p></li>
+<li><p><strong>Pemrosesan audio:</strong> Backend mengubah data audio yang diterima menjadi representasi numerik dan melakukan ekstraksi fitur akustik.</p></li>
+<li><p><strong>Klasifikasi:</strong> Fitur audio diproses menggunakan scaler dan model Random Forest yang telah disiapkan untuk menghasilkan prediksi kelas.</p></li>
+<li><p><strong>Pengiriman hasil:</strong> Backend mengirimkan hasil prediksi dan informasi fitur yang diperlukan kembali ke frontend dalam format JSON.</p></li>
+<li><p><strong>Penyajian hasil:</strong> Dashboard memperbarui status deteksi, nilai metrik, visualisasi gelombang audio, dan log aktivitas berdasarkan data yang diterima.</p></li>
+<li><p><strong>Peringatan:</strong> Apabila hasil klasifikasi menunjukkan kondisi Berisik, frontend dapat memicu peringatan suara untuk memberi tahu pengguna.</p></li>
+</ol>
+<p>Alur tersebut berlangsung berulang selama pemantauan aktif. Keberhasilan proses secara menyeluruh bergantung pada koneksi WebSocket, akses mikrofon, kesesuaian format data audio, dan ketersediaan model pada backend.</p>
+</section>
+<section id="teknologi-framework-dan-library">
+<h2>5. Teknologi, Framework, dan Library<a class="headerlink" href="#teknologi-framework-dan-library" title="Link to this heading">#</a></h2>
+<p>Teknologi yang digunakan dibagi menjadi dua bagian utama, yaitu frontend dan backend.</p>
+<section id="frontend">
+<h3>5.1 Frontend<a class="headerlink" href="#frontend" title="Link to this heading">#</a></h3>
+<p>Frontend merupakan bagian sistem yang berinteraksi langsung dengan pengguna. Antarmuka dibangun menggunakan teknologi web untuk menampilkan informasi hasil pemantauan secara dinamis.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Teknologi</p></th>
+<th class="head"><p>Fungsi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>React</p></td>
+<td><p>Membangun antarmuka pengguna berbasis komponen, seperti header, kartu status, kartu metrik, visualisasi audio, dan log deteksi.</p></td>
+</tr>
+<tr class="row-odd"><td><p>TypeScript</p></td>
+<td><p>Menambahkan sistem tipe pada kode JavaScript agar struktur data dan properti komponen lebih terkontrol.</p></td>
+</tr>
+<tr class="row-even"><td><p>Vite</p></td>
+<td><p>Menyediakan server pengembangan frontend dan proses pembangunan aplikasi.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Web Audio API</p></td>
+<td><p>Mengakses mikrofon melalui peramban serta memproses aliran audio di sisi klien.</p></td>
+</tr>
+<tr class="row-even"><td><p>WebSocket API</p></td>
+<td><p>Membuat koneksi komunikasi dua arah antara frontend dan backend untuk pengiriman audio dan penerimaan hasil prediksi.</p></td>
+</tr>
+<tr class="row-odd"><td><p>HTML dan CSS</p></td>
+<td><p>Menyusun struktur halaman serta mengatur tampilan dashboard, warna, tata letak, responsivitas, dan komponen visual.</p></td>
+</tr>
+<tr class="row-even"><td><p>Canvas API</p></td>
+<td><p>Menggambar visualisasi gelombang suara pada elemen canvas di dashboard.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="backend">
+<h3>5.2 Backend<a class="headerlink" href="#backend" title="Link to this heading">#</a></h3>
+<p>Backend bertanggung jawab untuk menerima data audio, melakukan pengolahan sinyal, dan menjalankan model klasifikasi.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Teknologi/Library</p></th>
+<th class="head"><p>Fungsi</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Python</p></td>
+<td><p>Bahasa pemrograman utama untuk pemrosesan audio dan inferensi model.</p></td>
+</tr>
+<tr class="row-odd"><td><p>FastAPI</p></td>
+<td><p>Framework backend untuk menyediakan layanan API dan endpoint WebSocket.</p></td>
+</tr>
+<tr class="row-even"><td><p>NumPy</p></td>
+<td><p>Mengolah data audio dalam bentuk array numerik.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Librosa</p></td>
+<td><p>Mengekstrak fitur audio, termasuk RMS, Spectral Centroid, Zero Crossing Rate, dan MFCC.</p></td>
+</tr>
+<tr class="row-even"><td><p>scikit-learn</p></td>
+<td><p>Menyediakan komponen pemrosesan data dan model klasifikasi Random Forest.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Joblib/Pickle</p></td>
+<td><p>Memuat artefak model yang telah disimpan, sesuai metode penyimpanan yang digunakan pada proyek.</p></td>
+</tr>
+<tr class="row-even"><td><p>Uvicorn</p></td>
+<td><p>Server ASGI yang digunakan untuk menjalankan aplikasi FastAPI.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Catatan:</strong> Tabel ini menjelaskan teknologi yang digunakan atau direncanakan berdasarkan rancangan sistem. Nama dan penggunaan library backend, termasuk Joblib/Pickle dan Uvicorn, perlu diverifikasi dengan kode backend serta berkas dependensi proyek.</p>
+</section>
+<section id="model-dan-artefak-machine-learning">
+<h3>5.3 Model dan Artefak Machine Learning<a class="headerlink" href="#model-dan-artefak-machine-learning" title="Link to this heading">#</a></h3>
+<p>Sistem menggunakan model Random Forest untuk melakukan klasifikasi suara menjadi Berisik atau Non-Berisik. Model dan komponen pendukungnya disimpan sebagai artefak agar dapat dimuat kembali ketika backend dijalankan.</p>
+<p>Artefak model yang terdapat dalam rancangan proyek meliputi:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rf_model.pkl</span></code>: model Random Forest yang digunakan untuk memprediksi kelas suara.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scaler.pkl</span></code>: objek normalisasi atau penskalaan fitur, jika digunakan pada proses pelatihan model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">label_encoder.pkl</span></code>: objek pemetaan kelas numerik ke label kategori, jika digunakan dalam pipeline model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model_metadata.json</span></code>: berkas metadata model, jika digunakan oleh implementasi backend.</p></li>
+</ul>
+<p>Penggunaan scaler dan label encoder saat inferensi harus mengikuti pipeline pelatihan agar fitur yang diberikan kepada model memiliki urutan, skala, dan pemetaan kelas yang sesuai.</p>
+</section>
+</section>
+<section id="manfaat">
+<h2>6. Manfaat<a class="headerlink" href="#manfaat" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspek</p></th>
+<th class="head"><p>Manfaat Konkret</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Otomatisasi Pemantauan</p></td>
+<td><p>Membantu pengguna memantau dan mengklasifikasikan kondisi suara lingkungan secara otomatis.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dukungan Pengambilan Keputusan</p></td>
+<td><p>Memberikan informasi mengenai kondisi kebisingan sebagai bahan pertimbangan pengguna.</p></td>
+</tr>
+<tr class="row-even"><td><p>Peringatan Dini</p></td>
+<td><p>Memberikan peringatan suara ketika sistem mendeteksi kondisi Berisik.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Visualisasi Informasi</p></td>
+<td><p>Menyajikan status deteksi, fitur akustik, gelombang audio, dan riwayat deteksi melalui satu dashboard.</p></td>
+</tr>
+<tr class="row-even"><td><p>Integrasi Teknologi</p></td>
+<td><p>Menggabungkan pemrosesan sinyal digital, Machine Learning, komunikasi WebSocket, dan antarmuka web.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Akademis dan Sains Data</p></td>
+<td><p>Menjadi implementasi praktis penerapan metodologi CRISP-DM pada proyek klasifikasi audio.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="batasan-masalah">
+<h2>7. Batasan Masalah<a class="headerlink" href="#batasan-masalah" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>Sistem mengklasifikasikan audio ke dalam dua kategori, yaitu Berisik dan Non-Berisik.</p></li>
+<li><p>Fitur akustik yang dirancang terdiri atas 16 atribut: RMS, Spectral Centroid, Zero Crossing Rate, dan 13 koefisien MFCC.</p></li>
+<li><p>Model klasifikasi yang digunakan adalah Random Forest.</p></li>
+<li><p>Audio pemantauan langsung diambil melalui mikrofon peramban menggunakan Web Audio API.</p></li>
+<li><p>Audio dikirimkan dari frontend ke backend menggunakan WebSocket, dengan rancangan jendela analisis sekitar tiga detik.</p></li>
+<li><p>Backend menggunakan Python dan FastAPI, sedangkan frontend menggunakan React, TypeScript, dan Vite.</p></li>
+<li><p>Dashboard menampilkan informasi hasil klasifikasi dan fitur akustik yang dikirimkan oleh backend.</p></li>
+<li><p>Sistem tidak mencakup autentikasi pengguna atau penyimpanan data pada basis data.</p></li>
+<li><p>Kinerja sistem bergantung pada kualitas audio, kondisi mikrofon, koneksi antara frontend dan backend, serta performa model klasifikasi.</p></li>
+<li><p>Kategori Berisik dan Non-Berisik ditentukan berdasarkan data dan model yang digunakan, sehingga tidak secara otomatis menunjukkan bahwa suara telah melampaui ambang batas kebisingan resmi.</p></li>
+</ol>
+</section>
+<section id="kriteria-keberhasilan">
+<h2>8. Kriteria Keberhasilan<a class="headerlink" href="#kriteria-keberhasilan" title="Link to this heading">#</a></h2>
+<p>Proyek dinilai berhasil apabila memenuhi kriteria berikut:</p>
+<ol class="arabic simple">
+<li><p>Dashboard dapat dibuka dan menampilkan komponen antarmuka dengan baik.</p></li>
+<li><p>Sistem dapat meminta izin mikrofon dan mengambil audio dari peramban.</p></li>
+<li><p>Frontend dapat mengirimkan potongan audio ke backend melalui WebSocket.</p></li>
+<li><p>Backend dapat memproses audio, mengekstrak fitur yang sesuai, dan menghasilkan prediksi menggunakan model Random Forest.</p></li>
+<li><p>Hasil prediksi dapat diterima frontend dan ditampilkan pada indikator status serta log aktivitas.</p></li>
+<li><p>Nilai metrik akustik dapat ditampilkan ketika data fitur tersedia.</p></li>
+<li><p>Peringatan suara dapat dipicu ketika hasil klasifikasi menunjukkan kondisi Berisik.</p></li>
+<li><p>Kinerja klasifikasi dapat dievaluasi menggunakan Accuracy, Precision, Recall, F1-Score, dan Confusion Matrix.</p></li>
+</ol>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#latar-belakang">1. Latar Belakang</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rumusan-masalah">2. Rumusan Masalah</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tujuan-proyek">3. Tujuan Proyek</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gambaran-umum-dan-cara-kerja-sistem">4. Gambaran Umum dan Cara Kerja Sistem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#teknologi-framework-dan-library">5. Teknologi, Framework, dan Library</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frontend">5.1 Frontend</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backend">5.2 Backend</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model-dan-artefak-machine-learning">5.3 Model dan Artefak Machine Learning</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manfaat">6. Manfaat</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batasan-masalah">7. Batasan Masalah</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kriteria-keberhasilan">8. Kriteria Keberhasilan</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tim Audio Classification
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

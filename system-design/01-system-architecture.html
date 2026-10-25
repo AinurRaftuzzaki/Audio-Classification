@@ -1,0 +1,578 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>01 - Diagram Arsitektur Sistem (System Architecture Diagram) &#8212; Audio Classification</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'system-design/01-system-architecture';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../business-understanding.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Audio Classification</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../business-understanding.html">
+                    Business Understanding
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/AinurRaftuzzaki/Audio-Classification" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/AinurRaftuzzaki/Audio-Classification/issues/new?title=Issue%20on%20page%20%2Fsystem-design/01-system-architecture.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/system-design/01-system-architecture.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>01 - Diagram Arsitektur Sistem (System Architecture Diagram)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagram-arsitektur-tingkat-tinggi-high-level-architecture">1. Diagram Arsitektur Tingkat Tinggi (High-Level Architecture)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rincian-lapisan-arsitektur-architectural-layers">2. Rincian Lapisan Arsitektur (Architectural Layers)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-lapisan-klien-client-layer">A. Lapisan Klien (Client Layer)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#b-lapisan-layanan-inferensi-backend-services-layer">B. Lapisan Layanan &amp; Inferensi (Backend Services Layer)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-lapisan-pipeline-offline-training-feature-extraction">C. Lapisan Pipeline Offline (Training &amp; Feature Extraction)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-lapisan-penyimpanan-data-artefak-data-storage-layer">D. Lapisan Penyimpanan Data &amp; Artefak (Data Storage Layer)</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="diagram-arsitektur-sistem-system-architecture-diagram">
+<h1>01 - Diagram Arsitektur Sistem (System Architecture Diagram)<a class="headerlink" href="#diagram-arsitektur-sistem-system-architecture-diagram" title="Link to this heading">#</a></h1>
+<p>Dokumen ini menjelaskan arsitektur fisik dan logis dari sistem <strong>Audio Classification</strong>. Arsitektur ini dirancang menggunakan pendekatan <strong>Dual-Engine Deployment</strong> terpadu, di mana subsistem inferensi <em>real-time</em> berkecepatan tinggi dipisahkan namun terintegrasi secara mulus dengan subsistem analitik dan pemantauan data.</p>
+<hr class="docutils" />
+<section id="diagram-arsitektur-tingkat-tinggi-high-level-architecture">
+<h2>1. Diagram Arsitektur Tingkat Tinggi (High-Level Architecture)<a class="headerlink" href="#diagram-arsitektur-tingkat-tinggi-high-level-architecture" title="Link to this heading">#</a></h2>
+<p>Berikut adalah representasi arsitektur sistem menggunakan diagram Mermaid:</p>
+<p><img alt="Diagram Arsitektur Sistem" src="../_images/01-system-architecture.png" /></p>
+</section>
+<hr class="docutils" />
+<section id="rincian-lapisan-arsitektur-architectural-layers">
+<h2>2. Rincian Lapisan Arsitektur (Architectural Layers)<a class="headerlink" href="#rincian-lapisan-arsitektur-architectural-layers" title="Link to this heading">#</a></h2>
+<section id="a-lapisan-klien-client-layer">
+<h3>A. Lapisan Klien (Client Layer)<a class="headerlink" href="#a-lapisan-klien-client-layer" title="Link to this heading">#</a></h3>
+<p>Berjalan sepenuhnya di peramban web (<em>client-side browser</em>) menggunakan standar HTML5 dan <strong>Web Audio API</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>AudioContext (Sample Rate: 22.050 Hz)</strong>: Membuka akses mikrofon pengguna secara kontinu melalui <code class="docutils literal notranslate"><span class="pre">navigator.mediaDevices.getUserMedia</span></code>.</p></li>
+<li><p><strong>AnalyserNode &amp; HTML5 Canvas</strong>: Menghitung representasi domain waktu secara <em>real-time</em> melalui <code class="docutils literal notranslate"><span class="pre">getByteTimeDomainData</span></code> untuk dirender ke kanvas osiloskop dengan latensi &lt; 16 ms (60 fps).</p></li>
+<li><p><strong>ScriptProcessorNode (Buffer Chunking)</strong>: Mengumpulkan sampel suara ke dalam array <code class="docutils literal notranslate"><span class="pre">Float32Array</span></code> per jendela waktu (default 3.0 detik = 66.150 nilai amplitudo). Ketika ukuran <em>chunk</em> terpenuhi, data dikirim sebagai <em>raw binary stream</em> melalui HTTP POST ke backend.</p></li>
+<li><p><strong>Web Audio Oscillator (Synthesized Buzzer)</strong>: Pembangkit alarm suara lokal menggunakan osilator tipe <em>sawtooth</em> yang bertransisi cepat dari 900 Hz ke 450 Hz dalam 0.25 detik. Alarm ini berbunyi otomatis tanpa membutuhkan pemuatan berkas MP3 eksternal, sehingga tidak terjadi latensi <em>network I/O</em>.</p></li>
+</ol>
+</section>
+<section id="b-lapisan-layanan-inferensi-backend-services-layer">
+<h3>B. Lapisan Layanan &amp; Inferensi (Backend Services Layer)<a class="headerlink" href="#b-lapisan-layanan-inferensi-backend-services-layer" title="Link to this heading">#</a></h3>
+<p>Terdiri dari dua subsistem Python yang saling bersinergi:</p>
+<ol class="arabic simple">
+<li><p><strong>Live Audio Server (<code class="docutils literal notranslate"><span class="pre">live_server.py</span></code>) — Port 5000</strong>:</p>
+<ul class="simple">
+<li><p>Berbasis micro-framework <strong>Flask</strong>.</p></li>
+<li><p>Endpoint <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/</span></code>: Melayani antarmuka pengawasan tunggal yang cepat dan ringan.</p></li>
+<li><p>Endpoint <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/classify_pcm</span></code>: Menerima <em>payload</em> biner <code class="docutils literal notranslate"><span class="pre">Float32Array</span></code>, membaca data dengan <code class="docutils literal notranslate"><span class="pre">np.frombuffer</span></code>, mengekstrak 16 fitur audio melalui fungsi <em>Digital Signal Processing</em> <code class="docutils literal notranslate"><span class="pre">librosa</span></code>, menormalkan nilai menggunakan <code class="docutils literal notranslate"><span class="pre">scaler.transform()</span></code>, dan mengklasifikasikan kelas menggunakan <code class="docutils literal notranslate"><span class="pre">knn_model.predict()</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Dashboard Controller (<code class="docutils literal notranslate"><span class="pre">app.py</span></code>) — Port 8501</strong>:</p>
+<ul class="simple">
+<li><p>Berbasis framework <strong>Streamlit</strong>.</p></li>
+<li><p>Fungsi <code class="docutils literal notranslate"><span class="pre">ensure_live_server()</span></code> melakukan <em>handshake socket TCP</em> ke port 5000; jika belum aktif, skrip akan meluncurkan <code class="docutils literal notranslate"><span class="pre">live_server.py</span></code> secara otomatis di latar belakang (<em>background process</em> via <code class="docutils literal notranslate"><span class="pre">subprocess.Popen</span></code>).</p></li>
+<li><p>Menyediakan navigasi 4 halaman:</p>
+<ul>
+<li><p><em>Live Audio Classifier</em> (menyematkan <code class="docutils literal notranslate"><span class="pre">http://localhost:5000</span></code> via iframe).</p></li>
+<li><p><em>Eksplorasi Dataset 16 Fitur</em> (filter interaktif, ringkasan statistik, dan unduh data CSV).</p></li>
+<li><p><em>Kinerja &amp; Evaluasi Model KNN</em> (metrik pengujian, kurva ROC, confusion matrix, analisis <span class="math notranslate nohighlight">\(K\)</span>).</p></li>
+<li><p><em>Metodologi CRISP-DM</em> (dokumentasi ilmiah proyek).</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="c-lapisan-pipeline-offline-training-feature-extraction">
+<h3>C. Lapisan Pipeline Offline (Training &amp; Feature Extraction)<a class="headerlink" href="#c-lapisan-pipeline-offline-training-feature-extraction" title="Link to this heading">#</a></h3>
+<p>Dijalankan oleh pengembang saat membangun atau memperbarui model:</p>
+<ol class="arabic simple">
+<li><p><strong>Ekstraksi Fitur Batch (<code class="docutils literal notranslate"><span class="pre">extract_features.py</span></code>)</strong>:</p>
+<ul class="simple">
+<li><p>Mengekstrak file ZIP dari folder <code class="docutils literal notranslate"><span class="pre">crawling/</span></code> ke folder <code class="docutils literal notranslate"><span class="pre">data/raw/</span></code>.</p></li>
+<li><p>Mengambil 16 fitur akustik per berkas suara dan menyimpannya ke <code class="docutils literal notranslate"><span class="pre">crawling/audio_features_16.csv</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Pelatihan Model KNN (<code class="docutils literal notranslate"><span class="pre">train_knn.py</span></code>)</strong>:</p>
+<ul class="simple">
+<li><p>Membagi data 80:20 secara terstratifikasi (<em>stratified train-test split</em>).</p></li>
+<li><p>Menjalankan <em>hyperparameter tuning</em> dengan 5-Fold Stratified Cross-Validation (<code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code>).</p></li>
+<li><p>Menghasilkan dan menyimpan visualisasi ke <code class="docutils literal notranslate"><span class="pre">images/</span></code> serta mengekspor artefak model ke <code class="docutils literal notranslate"><span class="pre">models/</span></code>.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="d-lapisan-penyimpanan-data-artefak-data-storage-layer">
+<h3>D. Lapisan Penyimpanan Data &amp; Artefak (Data Storage Layer)<a class="headerlink" href="#d-lapisan-penyimpanan-data-artefak-data-storage-layer" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Model &amp; Scaler</strong>: Serialisasi objek Python menggunakan pustaka <code class="docutils literal notranslate"><span class="pre">joblib</span></code> (<code class="docutils literal notranslate"><span class="pre">knn_model.pkl</span></code>, <code class="docutils literal notranslate"><span class="pre">scaler.pkl</span></code>, <code class="docutils literal notranslate"><span class="pre">label_encoder.pkl</span></code>).</p></li>
+<li><p><strong>Metadata</strong>: Menyimpan konfigurasi hyperparameter dan riwayat evaluasi dalam format terstruktur [<code class="docutils literal notranslate"><span class="pre">model_metadata.json</span></code>](file:///d:/semester%205/psd/Audio%20Classification/Audio-Classification/models/model_metadata.json).</p></li>
+<li><p><strong>Dataset Tabular</strong>: Berkas CSV 16 fitur yang siap dipakai untuk pelatihan tanpa mengulang proses komputasi DSP.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./system-design"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagram-arsitektur-tingkat-tinggi-high-level-architecture">1. Diagram Arsitektur Tingkat Tinggi (High-Level Architecture)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rincian-lapisan-arsitektur-architectural-layers">2. Rincian Lapisan Arsitektur (Architectural Layers)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-lapisan-klien-client-layer">A. Lapisan Klien (Client Layer)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#b-lapisan-layanan-inferensi-backend-services-layer">B. Lapisan Layanan &amp; Inferensi (Backend Services Layer)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-lapisan-pipeline-offline-training-feature-extraction">C. Lapisan Pipeline Offline (Training &amp; Feature Extraction)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#d-lapisan-penyimpanan-data-artefak-data-storage-layer">D. Lapisan Penyimpanan Data &amp; Artefak (Data Storage Layer)</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tim Audio Classification
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
