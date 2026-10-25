@@ -177,7 +177,7 @@ Siklus inferensi audio *real-time* terjadi dalam putaran transmisi WebSocket tan
 Sistem bertumpu pada pertukaran objek fitur akustik (*AudioFeatureVector*) yang memiliki 16 dimensi absolut. Objek ini ditransformasikan dari representasi domain-waktu menjadi domain-frekuensi di peladen, kemudian dikembalikan ke antarmuka React untuk divisualisasikan pada kartu metrik.
 
 *Diagram Komponen:*
-![Component Diagram](system-design/images/Component%20Diagram.png)
+![Component Diagram](system-design/images/component-diagram.png)
 
 *Diagram Struktur Kelas:*
-![Class Diagram](system-design/images/Class%20%26%20Data%20Structure%20Diagram.png)
+![Class Diagram](system-design/images/class-diagram.png)
