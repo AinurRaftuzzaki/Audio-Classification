@@ -11,10 +11,9 @@ data/processed/
 *.zip
 
 # Model tersimpan
-models/*.pkl
-models/*.h5
-models/*.pt
-models/*.pth
+*.h5
+*.pt
+*.pth
 
 # Python
 __pycache__/
