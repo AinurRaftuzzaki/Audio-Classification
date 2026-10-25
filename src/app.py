@@ -104,7 +104,6 @@ menu = st.sidebar.radio(
         "⚡ Live Audio Classifier (Deteksi Langsung & Bunyi)",
         "📊 Eksplorasi Dataset 16 Fitur",
         "🧠 Kinerja & Evaluasi Model RF",
-        "📖 Metodologi & Alur CRISP-DM"
     ]
 )
 
