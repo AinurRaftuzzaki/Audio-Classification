@@ -18,7 +18,7 @@ Dengan mengintegrasikan pengolahan audio, pembelajaran mesin, komunikasi WebSock
 2. Bagaimana mengekstrak 16 fitur akustik yang terdiri atas RMS, Spectral Centroid, Zero Crossing Rate, dan 13 koefisien MFCC secara konsisten?
 3. Bagaimana memanfaatkan model *Machine Learning* berbasis Random Forest untuk mengklasifikasikan suara ke dalam kategori Berisik dan Non-Berisik?
 4. Bagaimana mengintegrasikan proses pengambilan audio, ekstraksi fitur, inferensi model, dan pengiriman hasil klasifikasi dalam sistem pemantauan waktu nyata?
-5. Bagaimana menyajikan hasil pemantauan melalui dashboard yang informatif, termasuk status deteksi, metrik akustik, visualisasi gelombang audio, log aktivitas, dan peringatan suara?
+5. Bagaimana menyajikan hasil pemantauan melalui dashboard yang informatif, termasuk status deteksi, metrik akustik, visualisasi gelombang audio, log aktivitas, dan peringatan suara yang stabil?
 
 ## 3. Tujuan Proyek
 
@@ -28,7 +28,7 @@ Dengan mengintegrasikan pengolahan audio, pembelajaran mesin, komunikasi WebSock
 - **Validasi Kinerja:** Mengevaluasi kemampuan klasifikasi menggunakan metrik Accuracy, Precision, Recall, F1-Score, dan Confusion Matrix.
 - **Pengembangan Dashboard:** Menyediakan antarmuka yang menampilkan status sistem, indikator hasil deteksi, metrik akustik, visualisasi gelombang audio, dan log aktivitas.
 - **Integrasi Sistem:** Menghubungkan frontend dan backend melalui WebSocket agar data audio dapat diproses dan hasil prediksi dapat dikirimkan kembali tanpa harus melakukan permintaan HTTP berulang.
-- **Peringatan Kebisingan:** Menyediakan mekanisme peringatan suara ketika sistem mendeteksi kondisi Berisik.
+- **Peringatan Kebisingan:** Menyediakan mekanisme peringatan suara ketika sistem mendeteksi kondisi Berisik dengan kontrol stabilitas (*cooldown*).
 
 ## 4. Gambaran Umum dan Cara Kerja Sistem
 
@@ -38,13 +38,13 @@ Alur kerja sistem adalah sebagai berikut:
 
 1. **Inisialisasi pemantauan:** Pengguna membuka dashboard dan menekan tombol untuk memulai pemantauan suara.
 2. **Pengambilan audio:** Peramban meminta izin akses mikrofon dan mengambil sinyal audio menggunakan Web Audio API.
-3. **Pembagian data audio:** Audio dikumpulkan menjadi potongan data (*audio chunks*) untuk dikirimkan ke server. Sistem dirancang menggunakan jendela audio sekitar tiga detik untuk setiap proses analisis.
+3. **Pembagian data audio:** Audio dikumpulkan menjadi potongan data (*audio chunks*) untuk dikirimkan ke server. Sistem dirancang menggunakan jendela audio 1 detik (berbasis akumulasi sampel referensi) untuk pengiriman instan.
 4. **Transmisi data:** Frontend mengirimkan data audio ke backend melalui koneksi WebSocket.
 5. **Pemrosesan audio:** Backend mengubah data audio yang diterima menjadi representasi numerik dan melakukan ekstraksi fitur akustik.
 6. **Klasifikasi:** Fitur audio diproses menggunakan scaler dan model Random Forest yang telah disiapkan untuk menghasilkan prediksi kelas.
 7. **Pengiriman hasil:** Backend mengirimkan hasil prediksi dan informasi fitur yang diperlukan kembali ke frontend dalam format JSON.
 8. **Penyajian hasil:** Dashboard memperbarui status deteksi, nilai metrik, visualisasi gelombang audio, dan log aktivitas berdasarkan data yang diterima.
-9. **Peringatan:** Apabila hasil klasifikasi menunjukkan kondisi Berisik, frontend dapat memicu peringatan suara untuk memberi tahu pengguna.
+9. **Peringatan & Stabilisasi (Cooldown):** Apabila hasil klasifikasi menunjukkan kondisi Berisik, frontend langsung mengunci status bahaya (*state latching*) dan memicu peringatan suara. Status alarm dan UI baru akan direset ke kondisi normal (Non-Berisik) hanya jika server mengirimkan validasi status aman selama 3 detik berturut-turut. Hal ini mencegah peringatan mati-nyala (*flickering*) saat suara sedikit bergelombang.
 
 Alur tersebut berlangsung berulang selama pemantauan aktif. Keberhasilan proses secara menyeluruh bergantung pada koneksi WebSocket, akses mikrofon, kesesuaian format data audio, dan ketersediaan model pada backend.
 
@@ -101,7 +101,7 @@ Penggunaan scaler dan label encoder saat inferensi harus mengikuti pipeline pela
 |---|---|
 | Otomatisasi Pemantauan | Membantu pengguna memantau dan mengklasifikasikan kondisi suara lingkungan secara otomatis. |
 | Dukungan Pengambilan Keputusan | Memberikan informasi mengenai kondisi kebisingan sebagai bahan pertimbangan pengguna. |
-| Peringatan Dini | Memberikan peringatan suara ketika sistem mendeteksi kondisi Berisik. |
+| Peringatan Dini | Memberikan peringatan suara secara instan dengan toleransi peredaman cerdas saat mendeteksi kondisi Berisik. |
 | Visualisasi Informasi | Menyajikan status deteksi, fitur akustik, gelombang audio, dan riwayat deteksi melalui satu dashboard. |
 | Integrasi Teknologi | Menggabungkan pemrosesan sinyal digital, Machine Learning, komunikasi WebSocket, dan antarmuka web. |
 | Akademis dan Sains Data | Menjadi implementasi praktis penerapan metodologi CRISP-DM pada proyek klasifikasi audio. |
@@ -112,7 +112,7 @@ Penggunaan scaler dan label encoder saat inferensi harus mengikuti pipeline pela
 2. Fitur akustik yang dirancang terdiri atas 16 atribut: RMS, Spectral Centroid, Zero Crossing Rate, dan 13 koefisien MFCC.
 3. Model klasifikasi yang digunakan adalah Random Forest.
 4. Audio pemantauan langsung diambil melalui mikrofon peramban menggunakan Web Audio API.
-5. Audio dikirimkan dari frontend ke backend menggunakan WebSocket, dengan rancangan jendela analisis sekitar tiga detik.
+5. Audio dikirimkan dari frontend ke backend menggunakan WebSocket, dengan rancangan jendela pengiriman kontinu setiap 1 detik.
 6. Backend menggunakan Python dan FastAPI, sedangkan frontend menggunakan React, TypeScript, dan Vite.
 7. Dashboard menampilkan informasi hasil klasifikasi dan fitur akustik yang dikirimkan oleh backend.
 8. Sistem tidak mencakup autentikasi pengguna atau penyimpanan data pada basis data.
@@ -125,9 +125,59 @@ Proyek dinilai berhasil apabila memenuhi kriteria berikut:
 
 1. Dashboard dapat dibuka dan menampilkan komponen antarmuka dengan baik.
 2. Sistem dapat meminta izin mikrofon dan mengambil audio dari peramban.
-3. Frontend dapat mengirimkan potongan audio ke backend melalui WebSocket.
+3. Frontend dapat mengirimkan potongan audio ke backend setiap detik secara stabil melalui WebSocket.
 4. Backend dapat memproses audio, mengekstrak fitur yang sesuai, dan menghasilkan prediksi menggunakan model Random Forest.
 5. Hasil prediksi dapat diterima frontend dan ditampilkan pada indikator status serta log aktivitas.
 6. Nilai metrik akustik dapat ditampilkan ketika data fitur tersedia.
-7. Peringatan suara dapat dipicu ketika hasil klasifikasi menunjukkan kondisi Berisik.
-8. Kinerja klasifikasi dapat dievaluasi menggunakan Accuracy, Precision, Recall, F1-Score, dan Confusion Matrix.
+7. Peringatan suara dapat dipicu saat sistem mendeteksi kondisi Berisik.
+8. Sistem mampu menahan status peringatan secara stabil dan baru mereset UI ke kondisi normal setelah menerima respons Non-Berisik selama 3 detik berturut-turut.
+9. Kinerja klasifikasi dapat dievaluasi menggunakan Accuracy, Precision, Recall, F1-Score, dan Confusion Matrix.
+
+## 9. Desain Sistem
+
+Bagian ini memodelkan arsitektur, interaksi, dan alur kerja dari sistem Audio Surveillance menggunakan pendekatan komponen klien (React) dan peladen (FastAPI).
+
+### 9.1 Arsitektur Sistem (System Architecture)
+Sistem dirancang menggunakan arsitektur *Client-Server* berbasis *WebSocket* untuk menjamin latensi yang sangat rendah dalam transmisi audio berkelanjutan.
+* **Lapisan Klien (React + Web Audio API):** Mengambil sampel audio 22.050 Hz, mengemasnya setiap 1 detik (22.050 sampel), dan mengurus perenderan antarmuka (gelombang suara, metrik, alarm) secara *real-time*.
+* **Lapisan Peladen (FastAPI + Librosa):** Menerima aliran biner audio, mengekstrak 16 fitur akustik, dan menggunakan model Random Forest (`rf_model.pkl`) untuk inferensi kelas suara.
+
+![System Architecture](system-design/images/01-system-architecture.png)
+
+### 9.2 Kasus Penggunaan (Use Case)
+Sistem berinteraksi dengan dua aktor utama dan satu aktor sistem:
+1. **Operator Lingkungan:** Mengaktifkan mikrofon, memantau *dashboard*, dan menerima peringatan alarm.
+2. **Pengembang (Data Scientist):** Melatih model Random Forest secara *offline* dan memelihara *pipeline* ekstraksi fitur.
+3. **Web Audio API (Sistem Klien):** Bertugas merekam sinyal mikrofon, memecah *buffer* per 1 detik, dan memicu sintesis suara alarm.
+
+![Use Case Diagram](system-design/images/02-use-case-diagram.png)
+
+### 9.3 Alur Proses (Activity Diagram)
+Aktivitas sistem terbagi menjadi dua alur utama:
+* **Pipeline Offline:** Ekstraksi fitur CSV dari dataset mentah $\rightarrow$ Pelatihan Model Random Forest $\rightarrow$ Ekspor *Scaler* dan Model.
+* **Pipeline Online:** 
+  1. Klien mengirim *chunk* audio via WebSocket setiap 1 detik.
+  2. Peladen merespons dengan hasil fitur dan probabilitas kelas.
+  3. UI merespons hasil: Jika berisik, alarm langsung menyala (dikunci). Jika non-berisik 3 detik berturut-turut, status kembali hijau (mekanisme *cooldown*).
+
+![Activity Diagram](system-design/images/03-activity-diagram.png)
+
+### 9.4 Interaksi Antarkomponen (Sequence Diagram)
+Siklus inferensi audio *real-time* terjadi dalam putaran transmisi WebSocket tanpa beban *overhead* HTTP:
+1. `App.tsx` membuka jalur `ws://127.0.0.1:8000/ws/audio`.
+2. Klien mengirim `Float32Array.buffer` (durasi 1 detik).
+3. FastAPI memproses dengan `librosa` untuk mendapat 16 vektor fitur (RMS, Centroid, ZCR, 13 MFCC).
+4. `StandardScaler` menormalkan vektor, lalu `RandomForestClassifier` memprediksi label.
+5. FastAPI mengirim JSON `{"label": "...", "confidence": ..., "features": {...}}`.
+6. React memperbarui DOM dan membunyikan fungsi `playAlarm()` jika label berisik.
+
+![Sequence Diagram](system-design/images/04-sequence-diagram.png)
+
+### 9.5 Struktur Kelas & Komponen
+Sistem bertumpu pada pertukaran objek fitur akustik (*AudioFeatureVector*) yang memiliki 16 dimensi absolut. Objek ini ditransformasikan dari representasi domain-waktu menjadi domain-frekuensi di peladen, kemudian dikembalikan ke antarmuka React untuk divisualisasikan pada kartu metrik.
+
+*Diagram Komponen:*
+![Component Diagram](system-design/images/Component%20Diagram.png)
+
+*Diagram Struktur Kelas:*
+![Class Diagram](system-design/images/Class%20%26%20Data%20Structure%20Diagram.png)

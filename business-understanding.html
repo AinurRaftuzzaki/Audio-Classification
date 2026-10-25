@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css?v=8cd3d715" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -57,9 +57,12 @@
     <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'business-understanding';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="01 - Diagram Arsitektur Sistem (System Architecture Diagram)" href="system-design/01-system-architecture.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -173,7 +176,11 @@
                 </a>
             </li>
         </ul>
-        
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="system-design/01-system-architecture.html">01 - Diagram Arsitektur Sistem (System Architecture Diagram)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system-design/02-use-case-diagram.html">02 - Use Case Diagram &amp; Rincian Aktor</a></li>
+</ul>
+
     </div>
 </nav></div>
     </div>
@@ -380,6 +387,14 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manfaat">6. Manfaat</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batasan-masalah">7. Batasan Masalah</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kriteria-keberhasilan">8. Kriteria Keberhasilan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#desain-sistem">9. Desain Sistem</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#arsitektur-sistem-system-architecture">9.1 Arsitektur Sistem (System Architecture)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kasus-penggunaan-use-case">9.2 Kasus Penggunaan (Use Case)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#alur-proses-activity-diagram">9.3 Alur Proses (Activity Diagram)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interaksi-antarkomponen-sequence-diagram">9.4 Interaksi Antarkomponen (Sequence Diagram)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#struktur-kelas-komponen">9.5 Struktur Kelas &amp; Komponen</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -408,7 +423,7 @@ document.write(`
 <li><p>Bagaimana mengekstrak 16 fitur akustik yang terdiri atas RMS, Spectral Centroid, Zero Crossing Rate, dan 13 koefisien MFCC secara konsisten?</p></li>
 <li><p>Bagaimana memanfaatkan model <em>Machine Learning</em> berbasis Random Forest untuk mengklasifikasikan suara ke dalam kategori Berisik dan Non-Berisik?</p></li>
 <li><p>Bagaimana mengintegrasikan proses pengambilan audio, ekstraksi fitur, inferensi model, dan pengiriman hasil klasifikasi dalam sistem pemantauan waktu nyata?</p></li>
-<li><p>Bagaimana menyajikan hasil pemantauan melalui dashboard yang informatif, termasuk status deteksi, metrik akustik, visualisasi gelombang audio, log aktivitas, dan peringatan suara?</p></li>
+<li><p>Bagaimana menyajikan hasil pemantauan melalui dashboard yang informatif, termasuk status deteksi, metrik akustik, visualisasi gelombang audio, log aktivitas, dan peringatan suara yang stabil?</p></li>
 </ol>
 </section>
 <section id="tujuan-proyek">
@@ -420,7 +435,7 @@ document.write(`
 <li><p><strong>Validasi Kinerja:</strong> Mengevaluasi kemampuan klasifikasi menggunakan metrik Accuracy, Precision, Recall, F1-Score, dan Confusion Matrix.</p></li>
 <li><p><strong>Pengembangan Dashboard:</strong> Menyediakan antarmuka yang menampilkan status sistem, indikator hasil deteksi, metrik akustik, visualisasi gelombang audio, dan log aktivitas.</p></li>
 <li><p><strong>Integrasi Sistem:</strong> Menghubungkan frontend dan backend melalui WebSocket agar data audio dapat diproses dan hasil prediksi dapat dikirimkan kembali tanpa harus melakukan permintaan HTTP berulang.</p></li>
-<li><p><strong>Peringatan Kebisingan:</strong> Menyediakan mekanisme peringatan suara ketika sistem mendeteksi kondisi Berisik.</p></li>
+<li><p><strong>Peringatan Kebisingan:</strong> Menyediakan mekanisme peringatan suara ketika sistem mendeteksi kondisi Berisik dengan kontrol stabilitas (<em>cooldown</em>).</p></li>
 </ul>
 </section>
 <section id="gambaran-umum-dan-cara-kerja-sistem">
@@ -430,13 +445,13 @@ document.write(`
 <ol class="arabic simple">
 <li><p><strong>Inisialisasi pemantauan:</strong> Pengguna membuka dashboard dan menekan tombol untuk memulai pemantauan suara.</p></li>
 <li><p><strong>Pengambilan audio:</strong> Peramban meminta izin akses mikrofon dan mengambil sinyal audio menggunakan Web Audio API.</p></li>
-<li><p><strong>Pembagian data audio:</strong> Audio dikumpulkan menjadi potongan data (<em>audio chunks</em>) untuk dikirimkan ke server. Sistem dirancang menggunakan jendela audio sekitar tiga detik untuk setiap proses analisis.</p></li>
+<li><p><strong>Pembagian data audio:</strong> Audio dikumpulkan menjadi potongan data (<em>audio chunks</em>) untuk dikirimkan ke server. Sistem dirancang menggunakan jendela audio 1 detik (berbasis akumulasi sampel referensi) untuk pengiriman instan.</p></li>
 <li><p><strong>Transmisi data:</strong> Frontend mengirimkan data audio ke backend melalui koneksi WebSocket.</p></li>
 <li><p><strong>Pemrosesan audio:</strong> Backend mengubah data audio yang diterima menjadi representasi numerik dan melakukan ekstraksi fitur akustik.</p></li>
 <li><p><strong>Klasifikasi:</strong> Fitur audio diproses menggunakan scaler dan model Random Forest yang telah disiapkan untuk menghasilkan prediksi kelas.</p></li>
 <li><p><strong>Pengiriman hasil:</strong> Backend mengirimkan hasil prediksi dan informasi fitur yang diperlukan kembali ke frontend dalam format JSON.</p></li>
 <li><p><strong>Penyajian hasil:</strong> Dashboard memperbarui status deteksi, nilai metrik, visualisasi gelombang audio, dan log aktivitas berdasarkan data yang diterima.</p></li>
-<li><p><strong>Peringatan:</strong> Apabila hasil klasifikasi menunjukkan kondisi Berisik, frontend dapat memicu peringatan suara untuk memberi tahu pengguna.</p></li>
+<li><p><strong>Peringatan &amp; Stabilisasi (Cooldown):</strong> Apabila hasil klasifikasi menunjukkan kondisi Berisik, frontend langsung mengunci status bahaya (<em>state latching</em>) dan memicu peringatan suara. Status alarm dan UI baru akan direset ke kondisi normal (Non-Berisik) hanya jika server mengirimkan validasi status aman selama 3 detik berturut-turut. Hal ini mencegah peringatan mati-nyala (<em>flickering</em>) saat suara sedikit bergelombang.</p></li>
 </ol>
 <p>Alur tersebut berlangsung berulang selama pemantauan aktif. Keberhasilan proses secara menyeluruh bergantung pada koneksi WebSocket, akses mikrofon, kesesuaian format data audio, dan ketersediaan model pada backend.</p>
 </section>
@@ -543,7 +558,7 @@ document.write(`
 <td><p>Memberikan informasi mengenai kondisi kebisingan sebagai bahan pertimbangan pengguna.</p></td>
 </tr>
 <tr class="row-even"><td><p>Peringatan Dini</p></td>
-<td><p>Memberikan peringatan suara ketika sistem mendeteksi kondisi Berisik.</p></td>
+<td><p>Memberikan peringatan suara secara instan dengan toleransi peredaman cerdas saat mendeteksi kondisi Berisik.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Visualisasi Informasi</p></td>
 <td><p>Menyajikan status deteksi, fitur akustik, gelombang audio, dan riwayat deteksi melalui satu dashboard.</p></td>
@@ -565,7 +580,7 @@ document.write(`
 <li><p>Fitur akustik yang dirancang terdiri atas 16 atribut: RMS, Spectral Centroid, Zero Crossing Rate, dan 13 koefisien MFCC.</p></li>
 <li><p>Model klasifikasi yang digunakan adalah Random Forest.</p></li>
 <li><p>Audio pemantauan langsung diambil melalui mikrofon peramban menggunakan Web Audio API.</p></li>
-<li><p>Audio dikirimkan dari frontend ke backend menggunakan WebSocket, dengan rancangan jendela analisis sekitar tiga detik.</p></li>
+<li><p>Audio dikirimkan dari frontend ke backend menggunakan WebSocket, dengan rancangan jendela pengiriman kontinu setiap 1 detik.</p></li>
 <li><p>Backend menggunakan Python dan FastAPI, sedangkan frontend menggunakan React, TypeScript, dan Vite.</p></li>
 <li><p>Dashboard menampilkan informasi hasil klasifikasi dan fitur akustik yang dikirimkan oleh backend.</p></li>
 <li><p>Sistem tidak mencakup autentikasi pengguna atau penyimpanan data pada basis data.</p></li>
@@ -579,14 +594,76 @@ document.write(`
 <ol class="arabic simple">
 <li><p>Dashboard dapat dibuka dan menampilkan komponen antarmuka dengan baik.</p></li>
 <li><p>Sistem dapat meminta izin mikrofon dan mengambil audio dari peramban.</p></li>
-<li><p>Frontend dapat mengirimkan potongan audio ke backend melalui WebSocket.</p></li>
+<li><p>Frontend dapat mengirimkan potongan audio ke backend setiap detik secara stabil melalui WebSocket.</p></li>
 <li><p>Backend dapat memproses audio, mengekstrak fitur yang sesuai, dan menghasilkan prediksi menggunakan model Random Forest.</p></li>
 <li><p>Hasil prediksi dapat diterima frontend dan ditampilkan pada indikator status serta log aktivitas.</p></li>
 <li><p>Nilai metrik akustik dapat ditampilkan ketika data fitur tersedia.</p></li>
-<li><p>Peringatan suara dapat dipicu ketika hasil klasifikasi menunjukkan kondisi Berisik.</p></li>
+<li><p>Peringatan suara dapat dipicu saat sistem mendeteksi kondisi Berisik.</p></li>
+<li><p>Sistem mampu menahan status peringatan secara stabil dan baru mereset UI ke kondisi normal setelah menerima respons Non-Berisik selama 3 detik berturut-turut.</p></li>
 <li><p>Kinerja klasifikasi dapat dievaluasi menggunakan Accuracy, Precision, Recall, F1-Score, dan Confusion Matrix.</p></li>
 </ol>
 </section>
+<section id="desain-sistem">
+<h2>9. Desain Sistem<a class="headerlink" href="#desain-sistem" title="Link to this heading">#</a></h2>
+<p>Bagian ini memodelkan arsitektur, interaksi, dan alur kerja dari sistem Audio Surveillance menggunakan pendekatan komponen klien (React) dan peladen (FastAPI).</p>
+<section id="arsitektur-sistem-system-architecture">
+<h3>9.1 Arsitektur Sistem (System Architecture)<a class="headerlink" href="#arsitektur-sistem-system-architecture" title="Link to this heading">#</a></h3>
+<p>Sistem dirancang menggunakan arsitektur <em>Client-Server</em> berbasis <em>WebSocket</em> untuk menjamin latensi yang sangat rendah dalam transmisi audio berkelanjutan.</p>
+<ul class="simple">
+<li><p><strong>Lapisan Klien (React + Web Audio API):</strong> Mengambil sampel audio 22.050 Hz, mengemasnya setiap 1 detik (22.050 sampel), dan mengurus perenderan antarmuka (gelombang suara, metrik, alarm) secara <em>real-time</em>.</p></li>
+<li><p><strong>Lapisan Peladen (FastAPI + Librosa):</strong> Menerima aliran biner audio, mengekstrak 16 fitur akustik, dan menggunakan model Random Forest (<code class="docutils literal notranslate"><span class="pre">rf_model.pkl</span></code>) untuk inferensi kelas suara.</p></li>
+</ul>
+<p><img alt="System Architecture" src="_images/01-system-architecture.png" /></p>
+</section>
+<section id="kasus-penggunaan-use-case">
+<h3>9.2 Kasus Penggunaan (Use Case)<a class="headerlink" href="#kasus-penggunaan-use-case" title="Link to this heading">#</a></h3>
+<p>Sistem berinteraksi dengan dua aktor utama dan satu aktor sistem:</p>
+<ol class="arabic simple">
+<li><p><strong>Operator Lingkungan:</strong> Mengaktifkan mikrofon, memantau <em>dashboard</em>, dan menerima peringatan alarm.</p></li>
+<li><p><strong>Pengembang (Data Scientist):</strong> Melatih model Random Forest secara <em>offline</em> dan memelihara <em>pipeline</em> ekstraksi fitur.</p></li>
+<li><p><strong>Web Audio API (Sistem Klien):</strong> Bertugas merekam sinyal mikrofon, memecah <em>buffer</em> per 1 detik, dan memicu sintesis suara alarm.</p></li>
+</ol>
+<p><img alt="Use Case Diagram" src="_images/02-use-case-diagram.png" /></p>
+</section>
+<section id="alur-proses-activity-diagram">
+<h3>9.3 Alur Proses (Activity Diagram)<a class="headerlink" href="#alur-proses-activity-diagram" title="Link to this heading">#</a></h3>
+<p>Aktivitas sistem terbagi menjadi dua alur utama:</p>
+<ul class="simple">
+<li><p><strong>Pipeline Offline:</strong> Ekstraksi fitur CSV dari dataset mentah <span class="math notranslate nohighlight">\(\rightarrow\)</span> Pelatihan Model Random Forest <span class="math notranslate nohighlight">\(\rightarrow\)</span> Ekspor <em>Scaler</em> dan Model.</p></li>
+<li><p><strong>Pipeline Online:</strong></p>
+<ol class="arabic simple">
+<li><p>Klien mengirim <em>chunk</em> audio via WebSocket setiap 1 detik.</p></li>
+<li><p>Peladen merespons dengan hasil fitur dan probabilitas kelas.</p></li>
+<li><p>UI merespons hasil: Jika berisik, alarm langsung menyala (dikunci). Jika non-berisik 3 detik berturut-turut, status kembali hijau (mekanisme <em>cooldown</em>).</p></li>
+</ol>
+</li>
+</ul>
+<p><img alt="Activity Diagram" src="_images/03-activity-diagram.png" /></p>
+</section>
+<section id="interaksi-antarkomponen-sequence-diagram">
+<h3>9.4 Interaksi Antarkomponen (Sequence Diagram)<a class="headerlink" href="#interaksi-antarkomponen-sequence-diagram" title="Link to this heading">#</a></h3>
+<p>Siklus inferensi audio <em>real-time</em> terjadi dalam putaran transmisi WebSocket tanpa beban <em>overhead</em> HTTP:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">App.tsx</span></code> membuka jalur <code class="docutils literal notranslate"><span class="pre">ws://127.0.0.1:8000/ws/audio</span></code>.</p></li>
+<li><p>Klien mengirim <code class="docutils literal notranslate"><span class="pre">Float32Array.buffer</span></code> (durasi 1 detik).</p></li>
+<li><p>FastAPI memproses dengan <code class="docutils literal notranslate"><span class="pre">librosa</span></code> untuk mendapat 16 vektor fitur (RMS, Centroid, ZCR, 13 MFCC).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> menormalkan vektor, lalu <code class="docutils literal notranslate"><span class="pre">RandomForestClassifier</span></code> memprediksi label.</p></li>
+<li><p>FastAPI mengirim JSON <code class="docutils literal notranslate"><span class="pre">{&quot;label&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;confidence&quot;:</span> <span class="pre">...,</span> <span class="pre">&quot;features&quot;:</span> <span class="pre">{...}}</span></code>.</p></li>
+<li><p>React memperbarui DOM dan membunyikan fungsi <code class="docutils literal notranslate"><span class="pre">playAlarm()</span></code> jika label berisik.</p></li>
+</ol>
+<p><img alt="Sequence Diagram" src="_images/04-sequence-diagram.png" /></p>
+</section>
+<section id="struktur-kelas-komponen">
+<h3>9.5 Struktur Kelas &amp; Komponen<a class="headerlink" href="#struktur-kelas-komponen" title="Link to this heading">#</a></h3>
+<p>Sistem bertumpu pada pertukaran objek fitur akustik (<em>AudioFeatureVector</em>) yang memiliki 16 dimensi absolut. Objek ini ditransformasikan dari representasi domain-waktu menjadi domain-frekuensi di peladen, kemudian dikembalikan ke antarmuka React untuk divisualisasikan pada kartu metrik.</p>
+<p><em>Diagram Komponen:</em>
+<img alt="Component Diagram" src="system-design/images/Component%20Diagram.png" /></p>
+<p><em>Diagram Struktur Kelas:</em>
+<img alt="Class Diagram" src="system-design/images/Class%20%26%20Data%20Structure%20Diagram.png" /></p>
+</section>
+</section>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 
     <script type="text/x-thebe-config">
@@ -619,6 +696,15 @@ document.write(`
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
+    <a class="right-next"
+       href="system-design/01-system-architecture.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">01 - Diagram Arsitektur Sistem (System Architecture Diagram)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               
@@ -648,6 +734,14 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manfaat">6. Manfaat</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#batasan-masalah">7. Batasan Masalah</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kriteria-keberhasilan">8. Kriteria Keberhasilan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#desain-sistem">9. Desain Sistem</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#arsitektur-sistem-system-architecture">9.1 Arsitektur Sistem (System Architecture)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kasus-penggunaan-use-case">9.2 Kasus Penggunaan (Use Case)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#alur-proses-activity-diagram">9.3 Alur Proses (Activity Diagram)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interaksi-antarkomponen-sequence-diagram">9.4 Interaksi Antarkomponen (Sequence Diagram)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#struktur-kelas-komponen">9.5 Struktur Kelas &amp; Komponen</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
