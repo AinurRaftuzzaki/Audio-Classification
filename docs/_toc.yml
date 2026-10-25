@@ -1,17 +1,5 @@
-# Table of contents
-# Learn more at https://jupyterbook.org/customize/toc.html
-
 format: jb-book
-root: md/intro
+root: business-understanding
 chapters:
-- file: md/markdown
-  sections:
-  - file: md/business-understanding
-  - file: md/data-understanding
-  - file: md/crawling
-  - file: md/preprocessing
-  - file: md/feature-extraction
-  - file: md/modeling
-  - file: md/evaluation
-  - file: md/deployment
-  - file: md/conclusion
+  - file: system-design/01-system-architecture
+  - file: system-design/02-use-case-diagram
