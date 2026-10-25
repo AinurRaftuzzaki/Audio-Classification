@@ -184,4 +184,4 @@ Sistem bertumpu pada pertukaran objek fitur akustik (*AudioFeatureVector*) yang 
 
 ## 10. Demo Aplikasi Interaktif
 
-<iframe src="https://audio-classification-jcqzaitnuqtawmotdfbbdd.streamlit.app/" width="100%" height="750px" style="border:none; border-radius: 8px;"></iframe>
+[![Buka Aplikasi Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://audio-classification-jcqzaitnuqtawmotdfbbdd.streamlit.app/)
