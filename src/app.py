@@ -19,11 +19,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Mundur satu folder ke root (Audio-Classification)
-ROOT_DIR = os.path.dirname(BASE_DIR)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # Berada di src/
+ROOT_DIR = os.path.dirname(BASE_DIR)                  # Mundur ke root (Audio-Classification/)
+
 MODELS_DIR = os.path.join(ROOT_DIR, 'models')
-DATA_CSV = os.path.join(ROOT_DIR, 'data', 'audio_features_16.csv')
+DATA_CSV = os.path.join(ROOT_DIR, 'Backend', 'data', 'audio_features_16.csv')
 IMAGES_DIR = os.path.join(ROOT_DIR, 'docs', 'images')
 
 # Pastikan Live Server (Flask Port 5000) Aktif di Latar Belakang
@@ -34,20 +34,6 @@ def is_port_in_use(port=5000):
     except Exception:
         return False
 
-def ensure_live_server():
-    if not is_port_in_use(5000):
-        server_script = os.path.join(BASE_DIR, 'live_server.py')
-        creation_flags = 0x08000000 if os.name == 'nt' else 0
-        try:
-            subprocess.Popen(
-                [sys.executable, server_script],
-                cwd=BASE_DIR,
-                creationflags=creation_flags
-            )
-        except Exception as e:
-            print("Gagal menjalankan live_server otomatis:", e)
-
-ensure_live_server()
 
 # Kustomisasi CSS Modern & Responsif
 st.markdown("""
@@ -67,9 +53,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Cache Model Loading
+# Ganti bagian load_artifacts di app.py menjadi seperti ini:
 @st.cache_resource
 def load_artifacts():
-    model_path = os.path.join(MODELS_DIR, 'rf_model.pkl')
+    model_path = os.path.join(MODELS_DIR, 'rf_model.pkl') # Pastikan rf_model.pkl
     scaler_path = os.path.join(MODELS_DIR, 'scaler.pkl')
     encoder_path = os.path.join(MODELS_DIR, 'label_encoder.pkl')
     metadata_path = os.path.join(MODELS_DIR, 'model_metadata.json')
@@ -85,8 +72,16 @@ def load_artifacts():
 
 @st.cache_data
 def load_dataset():
-    if os.path.exists(DATA_CSV):
-        return pd.read_csv(DATA_CSV)
+    # Coba beberapa kemungkinan jalur folder secara otomatis
+    possible_paths = [
+        os.path.join(ROOT_DIR, 'Backend', 'data', 'audio_features_16.csv'),
+        os.path.join(ROOT_DIR, 'data', 'audio_features_16.csv'),
+        os.path.join(BASE_DIR, 'data', 'audio_features_16.csv'),
+        'audio_features_16.csv'
+    ]
+    for path in possible_paths:
+        if os.path.exists(path):
+            return pd.read_csv(path)
     return None
 
 # Load Model
@@ -132,7 +127,7 @@ st.sidebar.caption("Proyek Sains Data - Audio Classification System")
 if menu == "⚡ Live Audio Classifier (Deteksi Langsung & Bunyi)":
     st.markdown('<div class="main-header">⚡ Live Audio Detection & Alarm System</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Mikrofon aktif mendengarkan secara langsung tanpa henti. Saat terjadi kebisingan selama jendela waktu yang ditentukan, <b>sistem langsung mendeteksi, mengklasifikasikan, dan membunyikan alarm suara!</b></div>', unsafe_allow_html=True)
-    components.iframe("http://localhost:5000", height=760, scrolling=True)
+    components.iframe("http://localhost:5173", height=760, scrolling=True)
 
 # ==============================================================================
 # MENU 2: EKSPLORASI DATASET
@@ -218,3 +213,40 @@ elif menu == "📖 Metodologi & Alur CRISP-DM":
     - **Live Streaming Audio Surveillance** (Flask) membaca input mikrofon, mengekstrak fitur setiap beberapa detik, dan mengklasifikasi.
     - **Dashboard Streamlit** sebagai antarmuka pemantauan dan analisis.
     """)
+
+elif menu == "📊 Eksplorasi Dataset 16 Fitur":
+    st.markdown('<div class="main-header">📊 Eksplorasi Dataset 16 Fitur Audio</div>', unsafe_allow_html=True)
+
+    if df_data is not None:
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Total Sampel Audio", f"{len(df_data)} file")
+        c2.metric("Kelas Berisik", f"{(df_data['label'] == 'berisik').sum()} sampel")
+        c3.metric("Kelas Non-Berisik", f"{(df_data['label'] == 'non_berisik').sum()} sampel")
+        c4.metric("Jumlah Kolom Fitur", "16 fitur")
+
+        tab_tabel, tab_visual, tab_stats = st.tabs(["📋 Tabel Data Lengkap", "📈 Visualisasi Fitur", "📐 Statistik Deskriptif"])
+
+        with tab_tabel:
+            st.dataframe(df_data, width="stretch")
+
+        with tab_visual:
+            col_v1, col_v2 = st.columns(2)
+            with col_v1:
+                st.markdown("#### Distribusi Kelas")
+                if os.path.exists(os.path.join(IMAGES_DIR, 'class_distribution.png')):
+                    st.image(os.path.join(IMAGES_DIR, 'class_distribution.png'), width="stretch")
+            with col_v2:
+                st.markdown("#### Matriks Korelasi")
+                if os.path.exists(os.path.join(IMAGES_DIR, 'correlation_matrix.png')):
+                    st.image(os.path.join(IMAGES_DIR, 'correlation_matrix.png'), width="stretch")
+
+            st.markdown("#### Perbandingan Karakteristik Fitur Utama")
+            if os.path.exists(os.path.join(IMAGES_DIR, 'feature_distribution.png')):
+                st.image(os.path.join(IMAGES_DIR, 'feature_distribution.png'), width="stretch")
+
+        with tab_stats:
+            st.markdown("#### Statistik Ringkasan per Kategori")
+            group_stats = df_data.groupby('label').mean(numeric_only=True).T
+            st.dataframe(group_stats, width="stretch")
+    else:
+        st.error("❌ File dataset `audio_features_16.csv` tidak ditemukan di `Backend/data/`. Periksa kembali letak file CSV kamu.")

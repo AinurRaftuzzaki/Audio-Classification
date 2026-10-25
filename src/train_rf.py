@@ -22,7 +22,7 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(base_dir) # Mundur satu folder ke root (Audio-Classification)
     
-    data_csv = os.path.join(root_dir, 'data', 'audio_features_16.csv')
+    data_csv = os.path.join(root_dir, 'Backend', 'data', 'audio_features_16.csv')
     images_dir = os.path.join(root_dir, 'docs', 'images') 
     models_dir = os.path.join(root_dir, 'models')
     

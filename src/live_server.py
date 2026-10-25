@@ -113,9 +113,9 @@ HTML_TEMPLATE = """
                 <div class="setting-row">
                     <label for="selDuration" style="font-weight: 600;">⏱️ Interval:</label>
                     <select id="selDuration" onchange="changeDuration()">
+                        <option value="1" selected>1 Detik (Rekomendasi Real-Time)</option>
                         <option value="2">2 Detik</option>
-                        <option value="3" selected>3 Detik</option>
-                        <option value="5">5 Detik</option>
+                        <option value="3">3 Detik</option>
                     </select>
                     <label class="toggle-sound">
                         <input type="checkbox" id="chkSoundAlert" checked>
@@ -157,7 +157,7 @@ HTML_TEMPLATE = """
     <script>
         let isMonitoring = false, audioContext = null, mediaStream = null, scriptProcessor = null, analyser = null, bufferChunk = [], isProcessing = false, lastAlertTime = 0;
         const SAMPLE_RATE = 22050;
-        let durationSeconds = 3.0;
+        let durationSeconds = 1.0;
         let CHUNK_SIZE = Math.round(SAMPLE_RATE * durationSeconds);
 
         const statusBox = document.getElementById('statusBox'), statusTitle = document.getElementById('statusTitle'), statusConfidence = document.getElementById('statusConfidence'), micStatus = document.getElementById('micStatus'), btnStart = document.getElementById('btnStart'), btnStop = document.getElementById('btnStop'), chkSoundAlert = document.getElementById('chkSoundAlert'), selDuration = document.getElementById('selDuration'), activityLog = document.getElementById('activityLog'), progressBar = document.getElementById('progressBar'), progressTimer = document.getElementById('progressTimer'), valRms = document.getElementById('valRms'), valCentroid = document.getElementById('valCentroid'), valZcr = document.getElementById('valZcr'), valMfcc1 = document.getElementById('valMfcc1'), canvas = document.getElementById('visualizer'), canvasCtx = canvas.getContext('2d');
