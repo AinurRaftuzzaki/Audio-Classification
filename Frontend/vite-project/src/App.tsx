@@ -32,6 +32,7 @@ export function App() {
   const CHUNK_SIZE = SAMPLE_RATE * AUDIO_DURATION_SEC; // 22.050 sampel
 
   // Generator Suara Buzzer (Web Audio API Synthesizer)
+  // Generator Suara Buzzer (Web Audio API Synthesizer)
   const playAlarm = useCallback(() => {
     const now = Date.now();
     // Beri jeda minimal 1.5 detik antar alarm agar suara tidak saling bertumpuk kasar
@@ -49,15 +50,15 @@ export function App() {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      // Karakter suara sawtooth untuk efek alarm peringatan yang tajam dan jelas
-      osc.type = 'sawtooth';
+      // UBAH KE 'square' AGAR SUARA JAUH LEBIH TEGAS, KERAS, DAN NYARING
+      osc.type = 'square'; 
       
-      // Frekuensi meluncur dari 880 Hz (A5) turun ke 440 Hz (A4) selama 0.3 detik
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+      // Frekuensi tinggi (1000 Hz) agar langsung menarik perhatian
+      osc.frequency.setValueAtTime(1000, ctx.currentTime);
+      osc.frequency.setValueAtTime(500, ctx.currentTime + 0.15); // Efek bip-bip tajam
 
-      // Volume envelope: mulai dari 30% lalu meluruh (fade out) perlahan ke 0.001
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      // Naikkan volume awal dari 0.3 ke 0.5 agar lebih mantap
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
 
       // Hubungkan sirkuit audio: Oscillator -> Gain -> Output Speaker
@@ -70,7 +71,7 @@ export function App() {
       console.error("[Buzzer] Terjadi kesalahan saat membunyikan alarm:", e);
     }
   }, []);
-
+  
   const addLog = useCallback((label: string, confidence: number, rms: number) => {
     const newLog: DetectionLogItem = {
       id: Date.now().toString(),
