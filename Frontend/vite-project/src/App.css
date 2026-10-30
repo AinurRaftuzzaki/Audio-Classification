@@ -1,7 +1,22 @@
 /* ==========================================================================
-   Dashboard Layout Styles - Audio Surveillance System
-   Palet Warna Dark Modern Proyek
+   Dashboard Layout & Theme Override - Audio Surveillance System
+   Palet Warna Slate Modern (Kontras Tinggi & Tidak Terlalu Gelap)
    ========================================================================== */
+
+:root {
+  --bg-main: #0f172a;               /* Biru dongker gelap yang lembut */
+  --bg-card: #1e293b;               /* Abu-abu kebiruan terang untuk kartu */
+  --bg-card-inner: #263349;         /* Latar untuk sub-item di dalam kartu */
+  --text-primary: #f8fafc;          /* Putih terang untuk teks utama/angka */
+  --text-secondary: #cbd5e1;        /* Abu-abu terang agar label mudah dibaca */
+  --border-card: rgba(148, 163, 184, 0.22); /* Garis tepi kartu yang jelas */
+  --color-accent: #38bdf8;          /* Biru cerah untuk aksen ikon/gelombang */
+}
+
+body {
+  background-color: var(--bg-main) !important;
+  color: var(--text-primary) !important;
+}
 
 /* Kontainer Utama Dashboard */
 .dashboard-container {
@@ -15,6 +30,94 @@
   min-height: 100vh;
 }
 
+/*Grid Utama Dashboard: 2 Kolom di Desktop */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+  flex: 1;
+}
+
+.dashboard-left-col,
+.dashboard-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Menambahkan jarak konsisten antar kartu atas dan bawah */
+}
+
+/* ==========================================================================
+   Penyesuaian Visual Kartu & Komponen (Kontras & Tata Letak)
+   ========================================================================== */
+
+/* Ganti bagian nomor 1, 2, dan 3 di App.css kamu dengan ini: */
+
+/* 1. Beri background & padding yang pas agar isi kartu tidak nabrak garis tepi */
+.dashboard-container > header,
+.dashboard-left-col > div,
+.dashboard-right-col > div:last-child {
+  background: linear-gradient(145deg, #1e293b, #172133) !important;
+  border: 1px solid var(--border-card) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Biarkan pembungkus luar Fitur Akustik transparan tanpa border luar agar tidak nabrak */
+.dashboard-right-col > div:first-child {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* 2. Terangkan 3 sub-kartu metrik (RMS, Spectral Centroid, ZCR) */
+.dashboard-right-col > div:first-child div[class*="card"],
+.dashboard-right-col > div:first-child div[class*="item"],
+.dashboard-right-col > div:first-child > div:nth-child(2) > div {
+  background: linear-gradient(145deg, #1e293b, #172133) !important;
+  border: 1px solid var(--border-card) !important;
+  border-radius: 12px !important;
+  padding: 18px !important;
+}
+
+/* 3. Buat kartu ZCR melebar penuh */
+.dashboard-right-col > div:first-child div[class*="grid"] > div:nth-child(3),
+.dashboard-right-col > div:first-child > div:nth-child(2) > div:nth-child(3) {
+  grid-column: 1 / -1 !important;
+}
+
+/* 4. Perjelas Teks, Angka Metrik, dan Label */
+.dashboard-container h1,
+.dashboard-container h2,
+.dashboard-container h3,
+.dashboard-container strong {
+  color: var(--text-primary) !important;
+}
+
+.dashboard-container p,
+.dashboard-container span:not([class*="badge"]):not([class*="status"]) {
+  color: var(--text-secondary);
+}
+
+/* 5. Rapikan Tabel Log Aktivitas agar Lebih Lega */
+.dashboard-right-col table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-right-col th {
+  color: #94a3b8 !important;
+  font-weight: 600;
+  padding: 12px 14px !important;
+  border-bottom: 1px solid var(--border-card) !important;
+}
+
+.dashboard-right-col td {
+  padding: 12px 14px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
 /* Banner Informasi Mode UI */
 .system-notice-banner {
   display: flex;
@@ -22,8 +125,8 @@
   gap: 12px;
   padding: 12px 18px;
   border-radius: 10px;
-  background-color: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  background-color: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
   color: var(--text-primary);
   font-size: 13px;
   margin-bottom: 24px;
@@ -40,25 +143,6 @@
   margin: 0;
   line-height: 1.5;
   color: var(--text-secondary);
-}
-
-.notice-text strong {
-  color: var(--text-primary);
-}
-
-/* Grid Utama Dashboard: 2 Kolom di Desktop */
-.dashboard-main-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-  flex: 1;
-}
-
-.dashboard-left-col,
-.dashboard-right-col {
-  display: flex;
-  flex-direction: column;
 }
 
 /* Footer Status Sistem */
@@ -80,26 +164,26 @@
 }
 
 .footer-right {
-  font-family: var(--mono);
+  font-family: var(--mono, monospace);
 }
 
-/* Kustomisasi Scrollbar untuk Seluruh Halaman Bertema Gelap */
+/* Kustomisasi Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0F172A;
+  background: var(--bg-main);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #475569;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #64748b;
 }
 
 /* ==========================================================================
@@ -110,7 +194,6 @@
     padding: 16px;
   }
 
-  /* Mengubah 2 Kolom Menjadi 1 Kolom ke Bawah di Layar Kecil */
   .dashboard-main-grid {
     grid-template-columns: 1fr;
     gap: 16px;

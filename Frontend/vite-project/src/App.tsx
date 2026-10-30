@@ -6,6 +6,7 @@ import { MetricsCard } from './components/MetricsCard';
 import { AudioVisualizer } from './components/AudioVisualizer';
 import { DetectionLog } from './components/DetectionLog';
 import './App.css';
+import alarmSound from './assets/alarm-bahaya.mp3';
 
 export function App() {
   const [isMonitoring, setIsMonitoring] = useState<boolean>(false);
@@ -22,6 +23,7 @@ export function App() {
   const streamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null); // Ref khusus pemutar MP3
   
   const bufferChunkRef = useRef<Float32Array[]>([]);
   const safeCountRef = useRef<number>(0);
@@ -31,47 +33,56 @@ export function App() {
   const AUDIO_DURATION_SEC = 1; // Jendela waktu 1 detik
   const CHUNK_SIZE = SAMPLE_RATE * AUDIO_DURATION_SEC; // 22.050 sampel
 
-  // Generator Suara Buzzer (Web Audio API Synthesizer)
-  // Generator Suara Buzzer (Web Audio API Synthesizer)
-  const playAlarm = useCallback(() => {
+  const playAlarm = useCallback((severity: 'biasa' | 'banget') => {
     const now = Date.now();
-    // Beri jeda minimal 1.5 detik antar alarm agar suara tidak saling bertumpuk kasar
-    if (now - lastAlertTimeRef.current < 1500) return;
-    lastAlertTimeRef.current = now;
 
     try {
-      const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      // Proteksi browser autoplay policy: jika audio context ditangguhkan, aktifkan kembali
-      if (ctx.state === 'suspended') {
-        ctx.resume();
+      if (severity === 'banget') {
+        // ALARM LEVEL 2 (BERISIK BANGET): Putar file /alarm-bahaya.mp3 dari folder public/
+        if (!alarmAudioRef.current) {
+          alarmAudioRef.current = new Audio(alarmSound);
+        }
+        const audio = alarmAudioRef.current;
+
+        // Cegah suara tabrakan: hanya putar ulang jika file sebelumnya sudah selesai/berhenti
+        if (audio.paused) {
+          audio.currentTime = 0;
+          audio.volume = 1.0;
+          audio.play().catch((err) => {
+            console.error("[Audio MP3] Gagal memutar file alarm-bahaya.mp3:", err);
+          });
+        }
+      } else {
+        // ALARM LEVEL 1 (BERISIK BIASA): Jeda 1 detik (1000 ms)
+        if (now - lastAlertTimeRef.current < 1000) return;
+        lastAlertTimeRef.current = now;
+
+        const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle'; 
+        osc.frequency.setValueAtTime(650, ctx.currentTime);
+        osc.frequency.setValueAtTime(480, ctx.currentTime + 0.2);
+
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.45);
       }
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      // UBAH KE 'square' AGAR SUARA JAUH LEBIH TEGAS, KERAS, DAN NYARING
-      osc.type = 'square'; 
-      
-      // Frekuensi tinggi (1000 Hz) agar langsung menarik perhatian
-      osc.frequency.setValueAtTime(1000, ctx.currentTime);
-      osc.frequency.setValueAtTime(500, ctx.currentTime + 0.15); // Efek bip-bip tajam
-
-      // Naikkan volume awal dari 0.3 ke 0.5 agar lebih mantap
-      gain.gain.setValueAtTime(0.5, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-
-      // Hubungkan sirkuit audio: Oscillator -> Gain -> Output Speaker
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
     } catch (e) {
       console.error("[Buzzer] Terjadi kesalahan saat membunyikan alarm:", e);
     }
   }, []);
-  
+
   const addLog = useCallback((label: string, confidence: number, rms: number) => {
     const newLog: DetectionLogItem = {
       id: Date.now().toString(),
@@ -119,17 +130,37 @@ export function App() {
 
           if (data.label === 'berisik') {
             safeCountRef.current = 0; // Reset pendingin
-            setCurrentLabel('berisik');
+
+            // Turunkan threshold RMS ke 0.035 (sesuai log mikrofonmu yang di kisaran 0.0267)
+            // ATAU jika confidence model sangat yakin (>= 75%) dan RMS minimal 0.025
+            const rmsVal = data.features.rms;
+            const isVeryNoisy = rmsVal >= 0.035 || (data.confidence >= 0.75 && rmsVal >= 0.025);
+            
+            const severityLevel = isVeryNoisy ? 'banget' : 'biasa';
+            const statusLabel = isVeryNoisy ? 'berisik_banget' : 'berisik_biasa';
+
+            // Jika turun dari 'berisik_banget' ke 'berisik_biasa', matikan sirine MP3
+            if (!isVeryNoisy && alarmAudioRef.current && !alarmAudioRef.current.paused) {
+              alarmAudioRef.current.pause();
+              alarmAudioRef.current.currentTime = 0;
+            }
+
+            setCurrentLabel(statusLabel);
             setCurrentConfidence(data.confidence);
-            playAlarm();
-            addLog('berisik', data.confidence, data.features.rms);
+            playAlarm(severityLevel);
+            addLog(statusLabel, data.confidence, rmsVal);
           } else {
             safeCountRef.current += 1;
-            // Cooldown: Matikan alarm / ubah status setelah menerima 3x respons aman (3 detik)
-            if (safeCountRef.current >= 3) {
+            // Cooldown 1 detik: Langsung matikan alarm & ubah status setelah 1x respons aman
+            if (safeCountRef.current >= 1) {
               setCurrentLabel('non_berisik');
               setCurrentConfidence(data.confidence);
               addLog('non_berisik', data.confidence, data.features.rms);
+
+              if (alarmAudioRef.current && !alarmAudioRef.current.paused) {
+                alarmAudioRef.current.pause();
+                alarmAudioRef.current.currentTime = 0;
+              }
             }
           }
         } catch (parseError) {
@@ -200,6 +231,12 @@ export function App() {
     setAudioData(undefined);
     safeCountRef.current = 0;
 
+    // Matikan MP3 sirine jika sedang berbunyi saat tombol Stop ditekan
+    if (alarmAudioRef.current) {
+      alarmAudioRef.current.pause();
+      alarmAudioRef.current.currentTime = 0;
+    }
+
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -235,12 +272,13 @@ export function App() {
   return (
     <div className="dashboard-container">
       <Header status={connectionStatus} isMonitoring={isMonitoring} onToggleMonitoring={handleToggleMonitoring} />
-      <main className="dashboard-main-grid" style={{ marginTop: '20px' }}>
-        <section className="dashboard-left-col">
+      
+      <main className="dashboard-main-grid" style={{ marginTop: '24px', gap: '24px' }}>
+        <section className="dashboard-left-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <StatusCard label={currentLabel} confidence={currentConfidence} isMonitoring={isMonitoring} />
           <AudioVisualizer audioData={audioData} isMonitoring={isMonitoring} />
         </section>
-        <section className="dashboard-right-col">
+        <section className="dashboard-right-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <MetricsCard features={currentFeatures} />
           <DetectionLog logs={logs} onClearLogs={() => setLogs([])} />
         </section>

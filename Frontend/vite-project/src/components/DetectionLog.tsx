@@ -17,6 +17,36 @@ export const DetectionLog: React.FC<DetectionLogProps> = ({
 }) => {
   const hasLogs = logs.length > 0;
 
+  // Fungsi pembantu untuk menentukan warna dan label badge berdasarkan 3 level status
+  const getBadgeStyle = (rawLabel: string) => {
+    const label = rawLabel.toLowerCase();
+
+    if (label.includes('banget')) {
+      return {
+        text: 'Sangat Berisik',
+        color: '#ef4444', // Merah terang
+        bg: 'rgba(239, 68, 68, 0.15)',
+        border: 'rgba(239, 68, 68, 0.4)',
+      };
+    }
+
+    if (label.includes('berisik') && !label.includes('non')) {
+      return {
+        text: 'Berisik Biasa',
+        color: '#f59e0b', // Kuning-Oranye (Warning)
+        bg: 'rgba(245, 158, 11, 0.15)',
+        border: 'rgba(245, 158, 11, 0.4)',
+      };
+    }
+
+    return {
+      text: 'Tenang (Aman)',
+      color: '#10b981', // Hijau (Safe)
+      bg: 'rgba(16, 185, 129, 0.14)',
+      border: 'rgba(16, 185, 129, 0.35)',
+    };
+  };
+
   return (
     <div style={styles.card}>
       {/* Header Log */}
@@ -67,16 +97,8 @@ export const DetectionLog: React.FC<DetectionLogProps> = ({
             </thead>
             <tbody>
               {logs.map((item) => {
-                const isNoisy =
-                  item.label.toLowerCase().includes('berisik') &&
-                  !item.label.toLowerCase().includes('non');
-
-                const statusColor = isNoisy
-                  ? 'var(--status-danger)'
-                  : 'var(--status-safe)';
-                const statusBg = isNoisy
-                  ? 'rgba(239, 68, 68, 0.12)'
-                  : 'rgba(16, 185, 129, 0.12)';
+                const badge = getBadgeStyle(item.label);
+                const displayConf = item.confidence <= 1 ? item.confidence * 100 : item.confidence;
 
                 return (
                   <tr key={item.id} style={styles.tableRow}>
@@ -88,19 +110,19 @@ export const DetectionLog: React.FC<DetectionLogProps> = ({
                       <span
                         style={{
                           ...styles.pillBadge,
-                          color: statusColor,
-                          backgroundColor: statusBg,
-                          border: `1px solid ${statusColor}40`,
+                          color: badge.color,
+                          backgroundColor: badge.bg,
+                          border: `1px solid ${badge.border}`,
                         }}
                       >
-                        {item.label}
+                        {badge.text}
                       </span>
                     </td>
 
                     {/* 3. Kolom Confidence */}
                     <td style={styles.td}>
                       <span style={styles.confidenceText}>
-                        {item.confidence.toFixed(1)}%
+                        {displayConf.toFixed(1)}%
                       </span>
                     </td>
 
@@ -200,7 +222,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: 'left',
   },
   tableHeaderRow: {
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
     position: 'sticky',
     top: 0,
     zIndex: 1,
@@ -236,7 +258,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   pillBadge: {
     display: 'inline-block',
-    padding: '3px 10px',
+    padding: '4px 10px',
     borderRadius: '12px',
     fontSize: '12px',
     fontWeight: 600,
