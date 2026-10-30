@@ -93,7 +93,7 @@ def main():
     print(f"Mapping Label: {dict(zip(le.classes_, le.transform(le.classes_)))}")
     
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
+        X, y_encoded, test_size=0.2, random_state=14, stratify=y_encoded
     )
     
     scaler = StandardScaler()
@@ -107,7 +107,7 @@ def main():
     print("4. PELATIHAN MODEL RANDOM FOREST")
     print("="*60)
     
-    rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf_model = RandomForestClassifier(n_estimators=100, criterion='entropy', random_state=42)
     rf_model.fit(X_train_scaled, y_train)
     
     y_pred = rf_model.predict(X_test_scaled)
@@ -161,14 +161,8 @@ def main():
     print("6. MENYIMPAN MODEL & SCALER")
     print("="*60)
     
-    model_path = os.path.join(models_dir, 'rf_model.pkl')
-    scaler_path = os.path.join(models_dir, 'scaler.pkl')
-    encoder_path = os.path.join(models_dir, 'label_encoder.pkl')
-    metadata_path = os.path.join(models_dir, 'model_metadata.json')
-    
-    joblib.dump(rf_model, model_path)
-    joblib.dump(scaler, scaler_path)
-    joblib.dump(le, encoder_path)
+    backend_models_dir = os.path.join(root_dir, 'Backend', 'models')
+    os.makedirs(backend_models_dir, exist_ok=True)
     
     metadata = {
         'model_name': 'Random Forest',
@@ -183,8 +177,12 @@ def main():
         'classes': list(le.classes_)
     }
     
-    with open(metadata_path, 'w', encoding='utf-8') as f:
-        json.dump(metadata, f, indent=4)
+    for target_dir in [models_dir, backend_models_dir]:
+        joblib.dump(rf_model, os.path.join(target_dir, 'rf_model.pkl'))
+        joblib.dump(scaler, os.path.join(target_dir, 'scaler.pkl'))
+        joblib.dump(le, os.path.join(target_dir, 'label_encoder.pkl'))
+        with open(os.path.join(target_dir, 'model_metadata.json'), 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, indent=4)
         
     print("SEMUA PROSES SELESAI DENGAN SUKSES!")
 
