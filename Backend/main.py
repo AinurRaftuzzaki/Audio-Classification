@@ -1,9 +1,11 @@
 import os
+os.environ["NUMBA_DISABLE_INTEL_SVML"] = "1"
 import joblib
 import numpy as np
 import librosa
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # 1. Inisialisasi Aplikasi FastAPI
 app = FastAPI(title="Audio Surveillance API")
@@ -20,6 +22,10 @@ app.add_middleware(
 # 3. Konfigurasi Path Model
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
+if not os.path.exists(os.path.join(MODELS_DIR, 'rf_model.pkl')):
+    ROOT_MODELS = os.path.join(BASE_DIR, '..', 'models')
+    if os.path.exists(os.path.join(ROOT_MODELS, 'rf_model.pkl')):
+        MODELS_DIR = ROOT_MODELS
 
 # 4. Memuat Model, Scaler, dan Label Encoder
 print("[INFO] Memuat model Random Forest...")
@@ -85,3 +91,14 @@ async def websocket_audio_endpoint(websocket: WebSocket):
         print("[INFO] Client terputus dari WebSocket.")
     except Exception as e:
         print(f"[ERROR] Terjadi kesalahan: {e}")
+
+# 7. Serve Static Files Frontend (Production Build)
+DIST_DIR = os.path.join(BASE_DIR, 'dist')
+if not os.path.exists(DIST_DIR):
+    DEV_DIST = os.path.join(BASE_DIR, '..', 'Frontend', 'vite-project', 'dist')
+    if os.path.exists(DEV_DIST):
+        DIST_DIR = DEV_DIST
+
+if os.path.exists(DIST_DIR):
+    print(f"[INFO] Frontend production build terdeteksi di: {DIST_DIR}")
+    app.mount("/", StaticFiles(directory=DIST_DIR, html=True), name="frontend")

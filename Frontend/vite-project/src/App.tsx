@@ -6,7 +6,6 @@ import { MetricsCard } from './components/MetricsCard';
 import { AudioVisualizer } from './components/AudioVisualizer';
 import { DetectionLog } from './components/DetectionLog';
 import './App.css';
-import alarmSound from './assets/alarm-bahaya.mp3';
 
 export function App() {
   const [isMonitoring, setIsMonitoring] = useState<boolean>(false);
@@ -23,7 +22,6 @@ export function App() {
   const streamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const alarmAudioRef = useRef<HTMLAudioElement | null>(null); // Ref khusus pemutar MP3
   
   const bufferChunkRef = useRef<Float32Array[]>([]);
   const safeCountRef = useRef<number>(0);
@@ -38,20 +36,30 @@ export function App() {
 
     try {
       if (severity === 'banget') {
-        // ALARM LEVEL 2 (BERISIK BANGET): Putar file /alarm-bahaya.mp3 dari folder public/
-        if (!alarmAudioRef.current) {
-          alarmAudioRef.current = new Audio(alarmSound);
-        }
-        const audio = alarmAudioRef.current;
+        // ALARM LEVEL 2 (BERISIK BANGET): Sirine Sawtooth tajam (900Hz -> 450Hz)
+        if (now - lastAlertTimeRef.current < 600) return;
+        lastAlertTimeRef.current = now;
 
-        // Cegah suara tabrakan: hanya putar ulang jika file sebelumnya sudah selesai/berhenti
-        if (audio.paused) {
-          audio.currentTime = 0;
-          audio.volume = 1.0;
-          audio.play().catch((err) => {
-            console.error("[Audio MP3] Gagal memutar file alarm-bahaya.mp3:", err);
-          });
+        const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
         }
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(900, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.3);
+
+        gain.gain.setValueAtTime(0.6, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
       } else {
         // ALARM LEVEL 1 (BERISIK BIASA): Jeda 1 detik (1000 ms)
         if (now - lastAlertTimeRef.current < 1000) return;
@@ -99,7 +107,9 @@ export function App() {
       setConnectionStatus('connecting');
       
       // 1. Inisialisasi WebSocket dengan proteksi error & parsing
-      const ws = new WebSocket('ws://127.0.0.1:8000/ws/audio');
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsHost = window.location.port === '5173' ? '127.0.0.1:8000' : window.location.host;
+      const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/audio`);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -139,12 +149,6 @@ export function App() {
             const severityLevel = isVeryNoisy ? 'banget' : 'biasa';
             const statusLabel = isVeryNoisy ? 'berisik_banget' : 'berisik_biasa';
 
-            // Jika turun dari 'berisik_banget' ke 'berisik_biasa', matikan sirine MP3
-            if (!isVeryNoisy && alarmAudioRef.current && !alarmAudioRef.current.paused) {
-              alarmAudioRef.current.pause();
-              alarmAudioRef.current.currentTime = 0;
-            }
-
             setCurrentLabel(statusLabel);
             setCurrentConfidence(data.confidence);
             playAlarm(severityLevel);
@@ -156,11 +160,6 @@ export function App() {
               setCurrentLabel('non_berisik');
               setCurrentConfidence(data.confidence);
               addLog('non_berisik', data.confidence, data.features.rms);
-
-              if (alarmAudioRef.current && !alarmAudioRef.current.paused) {
-                alarmAudioRef.current.pause();
-                alarmAudioRef.current.currentTime = 0;
-              }
             }
           }
         } catch (parseError) {
@@ -230,12 +229,6 @@ export function App() {
     setCurrentFeatures(undefined);
     setAudioData(undefined);
     safeCountRef.current = 0;
-
-    // Matikan MP3 sirine jika sedang berbunyi saat tombol Stop ditekan
-    if (alarmAudioRef.current) {
-      alarmAudioRef.current.pause();
-      alarmAudioRef.current.currentTime = 0;
-    }
 
     if (wsRef.current) {
       wsRef.current.close();

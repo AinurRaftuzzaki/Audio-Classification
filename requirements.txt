@@ -15,3 +15,8 @@ freesound-python
 ipykernel
 jupyter
 plotly
+fastapi
+uvicorn[standard]
+websockets
+joblib
+python-multipart
