@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sound-lab-app
     restart: unless-stopped
     ports:
       - "8009:8000"
