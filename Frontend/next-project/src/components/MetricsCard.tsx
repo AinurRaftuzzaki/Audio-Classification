@@ -12,12 +12,12 @@ interface MetricsCardProps {
 export const MetricsCard: React.FC<MetricsCardProps> = ({ features }) => {
   const hasData = features !== undefined && features !== null;
 
-  // Konfigurasi 3 metrik akustik
+  // Konfigurasi 3 metrik akustik dengan penyaring aman (optional chaining)
   const metricsList = [
     {
       id: 'rms',
       name: 'RMS (Energi Suara)',
-      value: hasData ? features.rms.toFixed(4) : '—',
+      value: (hasData && features?.rms !== undefined) ? features.rms.toFixed(4) : '—',
       unit: '',
       description: 'Amplitudo kenyaringan suara',
       icon: (
@@ -31,7 +31,7 @@ export const MetricsCard: React.FC<MetricsCardProps> = ({ features }) => {
     {
       id: 'centroid',
       name: 'Spectral Centroid',
-      value: hasData ? `${features.centroid.toFixed(1)}` : '—',
+      value: (hasData && features?.centroid !== undefined) ? Math.round(features.centroid).toString() : '—',
       unit: hasData ? 'Hz' : '',
       description: 'Pusat massa frekuensi suara',
       icon: (
@@ -43,7 +43,8 @@ export const MetricsCard: React.FC<MetricsCardProps> = ({ features }) => {
     {
       id: 'zcr',
       name: 'Zero Crossing Rate (ZCR)',
-      value: hasData ? features.zcr.toFixed(4) : '—',
+      // PERBAIKAN: Menggunakan features?.zcr, BUKAN features?.centroid
+      value: (hasData && features?.zcr !== undefined) ? features.zcr.toFixed(4) : '—',
       unit: '',
       description: 'Frekuensi perubahan tanda sinyal',
       icon: (

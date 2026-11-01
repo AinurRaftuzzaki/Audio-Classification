@@ -126,7 +126,7 @@ st.sidebar.caption("Proyek Sains Data - Audio Classification System")
 if menu == "⚡ Live Audio Classifier (Deteksi Langsung & Bunyi)":
     st.markdown('<div class="main-header">⚡ Live Audio Detection & Alarm System</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Mikrofon aktif mendengarkan secara langsung tanpa henti. Saat terjadi kebisingan selama jendela waktu yang ditentukan, <b>sistem langsung mendeteksi, mengklasifikasikan, dan membunyikan alarm suara!</b></div>', unsafe_allow_html=True)
-    components.iframe("http://localhost:5173", height=760, scrolling=True)
+    components.iframe("http://localhost:3000", height=760, scrolling=True)
 
 # ==============================================================================
 # MENU 2: EKSPLORASI DATASET
