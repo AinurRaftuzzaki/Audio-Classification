@@ -10,10 +10,7 @@ interface MetricsCardProps {
 export const MetricsCard: React.FC<MetricsCardProps> = ({ features }) => {
   const hasData = features !== undefined && features !== null;
 
-<<<<<<< HEAD:Frontend/vite-project/src/components/MetricsCard.tsx
   // Konfigurasi 3 metrik akustik
-=======
->>>>>>> c452bab61c44a485d3eeedf1f1f2088f3deb28ee:Frontend/next-project/src/components/MetricsCard.tsx
   const metricsList = [
     {
       id: 'rms',
@@ -44,11 +41,7 @@ export const MetricsCard: React.FC<MetricsCardProps> = ({ features }) => {
     {
       id: 'zcr',
       name: 'Zero Crossing Rate (ZCR)',
-<<<<<<< HEAD:Frontend/vite-project/src/components/MetricsCard.tsx
-      value: hasData ? features.zcr.toFixed(4) : '—',
-=======
       value: (hasData && features?.zcr !== undefined) ? features.zcr.toFixed(4) : '—',
->>>>>>> c452bab61c44a485d3eeedf1f1f2088f3deb28ee:Frontend/next-project/src/components/MetricsCard.tsx
       unit: '',
       description: 'Frekuensi perubahan tanda sinyal',
       icon: (

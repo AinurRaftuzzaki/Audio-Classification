@@ -9,13 +9,13 @@ echo [1/2] Menjalankan Backend API (FastAPI + Uvicorn)...
 start "Backend Server (FastAPI)" cmd /k "cd Backend && uvicorn main:app --reload --host 127.0.0.1 --port 8000"
 timeout /t 3 /nobreak >nul
 
-echo [2/2] Menjalankan Frontend Client (Next.js)...
+echo [2/2] Menjalankan Frontend Client (Vite)...
 echo.
 echo Akses Antarmuka:
-echo  - Frontend Dashboard : http://localhost:3000
+echo  - Frontend Dashboard : http://localhost:5173
 echo  - Backend API Docs   : http://127.0.0.1:8000/docs
 echo  - WebSocket Endpoint : ws://127.0.0.1:8000/ws/audio
 echo.
 
-cd Frontend\next-project && npm run dev
+cd Frontend\vite-project && npm run dev
 

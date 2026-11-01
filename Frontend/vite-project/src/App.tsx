@@ -15,6 +15,7 @@ export function App() {
   const [currentFeatures, setCurrentFeatures] = useState<AudioFeatures | undefined>(undefined);
   const [audioData, setAudioData] = useState<Uint8Array | undefined>(undefined);
   const [logs, setLogs] = useState<DetectionLogItem[]>([]);
+  const [isTestingAlarm, setIsTestingAlarm] = useState<boolean>(false);
 
   // Refs untuk menjaga instance API tetap hidup tanpa memicu re-render
   const wsRef = useRef<WebSocket | null>(null);
@@ -24,48 +25,45 @@ export function App() {
   const analyserRef = useRef<AnalyserNode | null>(null);
   
   const bufferChunkRef = useRef<Float32Array[]>([]);
-  const safeCountRef = useRef<number>(0);
   const lastAlertTimeRef = useRef<number>(0);
+  const noisyStreakRef = useRef<number>(0);
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const SAMPLE_RATE = 22050;
-  const AUDIO_DURATION_SEC = 1; // Jendela waktu 1 detik
+  const AUDIO_DURATION_SEC = 1; // Evaluasi per 1 detik
   const CHUNK_SIZE = SAMPLE_RATE * AUDIO_DURATION_SEC; // 22.050 sampel
 
+  // Menghentikan audio alarm MP3 jika sedang berbunyi
+  const stopAlarmSound = useCallback(() => {
+    if (alarmAudioRef.current && !alarmAudioRef.current.paused) {
+      alarmAudioRef.current.pause();
+      alarmAudioRef.current.currentTime = 0;
+    }
+  }, []);
+
+  // Memutar alarm berdasarkan tingkat keparahan
   const playAlarm = useCallback((severity: 'biasa' | 'banget') => {
     const now = Date.now();
 
     try {
       if (severity === 'banget') {
-        // ALARM LEVEL 2 (BERISIK BANGET): Sirine Sawtooth tajam (900Hz -> 450Hz)
-        if (now - lastAlertTimeRef.current < 600) return;
-        lastAlertTimeRef.current = now;
-
-        const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
-        if (ctx.state === 'suspended') {
-          ctx.resume();
+        // ALARM LEVEL 2 (BERISIK BANGET): Putar audio peringatan ringkas
+        if (!alarmAudioRef.current) {
+          alarmAudioRef.current = new Audio('/alarm-bahaya.mp3');
         }
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(900, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.3);
-
-        gain.gain.setValueAtTime(0.6, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
+        const audio = alarmAudioRef.current;
+        audio.loop = false;
+        if (audio.paused) {
+          audio.currentTime = 0;
+          audio.volume = 1.0;
+          audio.play().catch(err => console.warn('[Alarm Audio Play Error]:', err));
+        }
       } else {
-        // ALARM LEVEL 1 (BERISIK BIASA): Jeda 1 detik (1000 ms)
-        if (now - lastAlertTimeRef.current < 1000) return;
+        // ALARM LEVEL 1 (BERISIK BIASA): Beep lembut 1x via Web Audio oscillator
+        if (now - lastAlertTimeRef.current < 1500) return;
         lastAlertTimeRef.current = now;
 
-        const ctx = audioCtxRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+        const ctx = audioCtxRef.current || new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
         if (ctx.state === 'suspended') {
           ctx.resume();
         }
@@ -73,23 +71,47 @@ export function App() {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
-        osc.type = 'triangle'; 
-        osc.frequency.setValueAtTime(650, ctx.currentTime);
-        osc.frequency.setValueAtTime(480, ctx.currentTime + 0.2);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.setValueAtTime(400, ctx.currentTime + 0.2);
 
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
 
         osc.start();
-        osc.stop(ctx.currentTime + 0.45);
+        osc.stop(ctx.currentTime + 0.4);
       }
     } catch (e) {
-      console.error("[Buzzer] Terjadi kesalahan saat membunyikan alarm:", e);
+      console.warn('[Buzzer] Error:', e);
     }
   }, []);
+
+  // Tombol tes alarm di Header
+  const handleTestAlarm = () => {
+    if (isTestingAlarm) {
+      stopAlarmSound();
+      setIsTestingAlarm(false);
+    } else {
+      if (!alarmAudioRef.current) {
+        alarmAudioRef.current = new Audio('/alarm-bahaya.mp3');
+      }
+      const audio = alarmAudioRef.current;
+      audio.loop = false;
+      audio.currentTime = 0;
+      audio.volume = 1.0;
+      audio.onended = () => {
+        setIsTestingAlarm(false);
+      };
+      audio.play().then(() => {
+        setIsTestingAlarm(true);
+      }).catch(err => {
+        console.warn('[Alarm Test Error]:', err);
+      });
+    }
+  };
 
   const addLog = useCallback((label: string, confidence: number, rms: number) => {
     const newLog: DetectionLogItem = {
@@ -105,15 +127,16 @@ export function App() {
   const startMonitoring = async () => {
     try {
       setConnectionStatus('connecting');
+      noisyStreakRef.current = 0;
       
-      // 1. Inisialisasi WebSocket dengan proteksi error & parsing
+      // Inisialisasi koneksi WebSocket
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = window.location.port === '5173' ? '127.0.0.1:8000' : window.location.host;
+      const wsHost = window.location.port !== '8000' ? '127.0.0.1:8000' : window.location.host;
       const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/audio`);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('[WebSocket] Terhubung ke server audio.');
+        console.log('[WebSocket] Terhubung ke server backend.');
         setConnectionStatus('connected');
       };
 
@@ -137,42 +160,74 @@ export function App() {
           }
 
           setCurrentFeatures(data.features);
+          const rmsVal = data.features?.rms ?? 0;
+          const rfLabel = data.label; // 'berisik' atau 'non_berisik' dari backend
+          
+          let displayLabel = 'non_berisik';
+          let displayConfidence = 5;
 
-          if (data.label === 'berisik') {
-            safeCountRef.current = 0; // Reset pendingin
-
-            // Turunkan threshold RMS ke 0.035 (sesuai log mikrofonmu yang di kisaran 0.0267)
-            // ATAU jika confidence model sangat yakin (>= 75%) dan RMS minimal 0.025
-            const rmsVal = data.features.rms;
-            const isVeryNoisy = rmsVal >= 0.035 || (data.confidence >= 0.75 && rmsVal >= 0.025);
+          // 1. Filter mutlak untuk hening / kipas pelan
+          if (rmsVal < 0.008) {
+            noisyStreakRef.current = 0;
+            displayLabel = 'non_berisik';
+            displayConfidence = Math.round((rmsVal / 0.008) * 10);
+          } 
+          // 2. Jika model mendeteksi suara 'berisik'
+          else if (rfLabel === 'berisik') {
+            noisyStreakRef.current += 1;
             
-            const severityLevel = isVeryNoisy ? 'banget' : 'biasa';
-            const statusLabel = isVeryNoisy ? 'berisik_banget' : 'berisik_biasa';
-
-            setCurrentLabel(statusLabel);
-            setCurrentConfidence(data.confidence);
-            playAlarm(severityLevel);
-            addLog(statusLabel, data.confidence, rmsVal);
-          } else {
-            safeCountRef.current += 1;
-            // Cooldown 1 detik: Langsung matikan alarm & ubah status setelah 1x respons aman
-            if (safeCountRef.current >= 1) {
-              setCurrentLabel('non_berisik');
-              setCurrentConfidence(data.confidence);
-              addLog('non_berisik', data.confidence, data.features.rms);
+            // Butuh 3 detik berturut-turut (streak >= 3) untuk memicu alarm bahaya MP3
+            if (noisyStreakRef.current >= 3) {
+              displayLabel = 'berisik_banget';
+              displayConfidence = 85 + Math.min(15, noisyStreakRef.current * 2);
+            } else {
+              displayLabel = 'berisik_biasa';
+              displayConfidence = 25 + (noisyStreakRef.current * 10);
             }
+          } 
+          // 3. Jika model mendeteksi 'non_berisik'
+          else {
+            noisyStreakRef.current = 0;
+            displayLabel = 'non_berisik';
+            displayConfidence = 15;
           }
+
+          // Eksekusi status UI & Alarm
+          setCurrentLabel(displayLabel);
+          setCurrentConfidence(displayConfidence);
+
+          if (displayLabel === 'berisik_banget') {
+            playAlarm('banget');
+          } else if (displayLabel === 'berisik_biasa') {
+            stopAlarmSound();
+            playAlarm('biasa');
+          } else {
+            stopAlarmSound();
+          }
+
+          addLog(displayLabel, displayConfidence, rmsVal);
+
         } catch (parseError) {
-          console.error('[WebSocket] Gagal mem-parse respon JSON:', parseError);
+          console.warn('[WebSocket] Gagal parse data:', parseError);
         }
       };
 
-      // 2. Inisialisasi Mikrofon (Web Audio API)
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      // Matikan autoGainControl agar suara lingkungan/kipas tidak diperkuat otomatis
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+        video: false,
+      });
       streamRef.current = stream;
       
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: SAMPLE_RATE });
+      const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate: SAMPLE_RATE });
       audioCtxRef.current = audioCtx;
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
       
       const source = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
@@ -189,18 +244,16 @@ export function App() {
 
       processor.onaudioprocess = (e) => {
         if (ws.readyState !== WebSocket.OPEN) return;
-        
         const inputData = e.inputBuffer.getChannelData(0);
         bufferChunkRef.current.push(new Float32Array(inputData));
         
         const totalLength = bufferChunkRef.current.reduce((acc, val) => acc + val.length, 0);
         
-        // Update Visualizer
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteTimeDomainData(dataArray);
         setAudioData(dataArray);
 
-        // Kirim setiap 1 Detik (saat mencapai CHUNK_SIZE = 22.050 sampel)
+        // Kirim saat mencapai 1 detik audio (CHUNK_SIZE = 22.050 sampel)
         if (totalLength >= CHUNK_SIZE) {
           const mergedBuffer = new Float32Array(totalLength);
           let offset = 0;
@@ -215,7 +268,7 @@ export function App() {
 
       setIsMonitoring(true);
     } catch (error) {
-      console.error("Gagal memulai monitoring:", error);
+      console.error('Gagal memulai monitoring:', error);
       setConnectionStatus('disconnected');
       setIsMonitoring(false);
     }
@@ -228,7 +281,9 @@ export function App() {
     setCurrentConfidence(undefined);
     setCurrentFeatures(undefined);
     setAudioData(undefined);
-    safeCountRef.current = 0;
+    noisyStreakRef.current = 0;
+    stopAlarmSound();
+    setIsTestingAlarm(false);
 
     if (wsRef.current) {
       wsRef.current.close();
@@ -242,8 +297,8 @@ export function App() {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
     }
-    if (audioCtxRef.current) {
-      audioCtxRef.current.close();
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+      audioCtxRef.current.close().catch(console.warn);
       audioCtxRef.current = null;
     }
   };
@@ -258,20 +313,26 @@ export function App() {
 
   useEffect(() => {
     return () => {
-      stopMonitoring(); // Cleanup saat unmount
+      stopMonitoring();
     };
   }, []);
 
   return (
     <div className="dashboard-container">
-      <Header status={connectionStatus} isMonitoring={isMonitoring} onToggleMonitoring={handleToggleMonitoring} />
+      <Header
+        status={connectionStatus}
+        isMonitoring={isMonitoring}
+        onToggleMonitoring={handleToggleMonitoring}
+        isTestingAlarm={isTestingAlarm}
+        onTestAlarm={handleTestAlarm}
+      />
       
-      <main className="dashboard-main-grid" style={{ marginTop: '24px', gap: '24px' }}>
-        <section className="dashboard-left-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <main className="dashboard-main-grid">
+        <section className="dashboard-left-col">
           <StatusCard label={currentLabel} confidence={currentConfidence} isMonitoring={isMonitoring} />
           <AudioVisualizer audioData={audioData} isMonitoring={isMonitoring} />
         </section>
-        <section className="dashboard-right-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <section className="dashboard-right-col">
           <MetricsCard features={currentFeatures} />
           <DetectionLog logs={logs} onClearLogs={() => setLogs([])} />
         </section>
