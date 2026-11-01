@@ -5,6 +5,7 @@ data/raw/
 data/processed/
 *.wav
 *.mp3
+!Frontend/next-project/public/*.mp3
 *.flac
 *.ogg
 *.m4a

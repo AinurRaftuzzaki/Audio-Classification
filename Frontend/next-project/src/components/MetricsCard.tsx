@@ -65,21 +65,30 @@ export const MetricsCard: React.FC<MetricsCardProps> = ({ features }) => {
       </div>
 
       <div style={styles.grid}>
-        {metricsList.map((item) => (
-          <div key={item.id} style={styles.metricCard}>
-            <div style={styles.metricCardHeader}>
-              <span style={styles.metricName}>{item.name}</span>
-              <div style={styles.iconWrapper}>{item.icon}</div>
-            </div>
+        {metricsList.map((item) => {
+          const isFullWidth = item.id === 'zcr';
+          return (
+            <div
+              key={item.id}
+              style={{
+                ...styles.metricCard,
+                ...(isFullWidth ? styles.fullWidthCard : {}),
+              }}
+            >
+              <div style={styles.metricCardHeader}>
+                <span style={styles.metricName}>{item.name}</span>
+                <div style={styles.iconWrapper}>{item.icon}</div>
+              </div>
 
-            <div style={styles.valueRow}>
-              <span style={styles.metricValue}>{item.value}</span>
-              {item.unit && <span style={styles.metricUnit}>{item.unit}</span>}
-            </div>
+              <div style={styles.valueRow}>
+                <span style={styles.metricValue}>{item.value}</span>
+                {item.unit && <span style={styles.metricUnit}>{item.unit}</span>}
+              </div>
 
-            <p style={styles.metricDesc}>{item.description}</p>
-          </div>
-        ))}
+              <p style={styles.metricDesc}>{item.description}</p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -107,7 +116,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '16px',
   },
   metricCard: {
@@ -119,6 +128,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column',
     gap: '8px',
     boxShadow: '0 4px 10px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04)',
+  },
+  fullWidthCard: {
+    gridColumn: '1 / -1',
   },
   metricCardHeader: {
     display: 'flex',

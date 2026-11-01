@@ -66,7 +66,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({
     if (isVeryNoisy) {
       return {
         title: 'Kebisingan Tinggi (Bahaya)',
-        subtitle: 'Peringatan: Tingkat kebisingan ekstrem terdeteksi di lingkungan. Alarm sirine aktif.',
+        subtitle: 'Peringatan: Tingkat kebisingan terdeteksi di lingkungan. Alarm suara "Harap Tenang, Jangan Berisik" aktif.',
         badgeColor: '#B91C1C',
         bgColor: '#FEF2F2',
         borderColor: '#FCA5A5',

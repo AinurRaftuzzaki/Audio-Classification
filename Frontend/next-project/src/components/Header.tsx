@@ -7,12 +7,16 @@ interface HeaderProps {
   status?: ConnectionStatus;
   isMonitoring?: boolean;
   onToggleMonitoring?: () => void;
+  isTestingAlarm?: boolean;
+  onTestAlarm?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   status = 'disconnected',
   isMonitoring = false,
   onToggleMonitoring,
+  isTestingAlarm = false,
+  onTestAlarm,
 }) => {
   const getStatusBadge = () => {
     switch (status) {
@@ -69,6 +73,38 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div style={styles.actions}>
+        {onTestAlarm && (
+          <button
+            type="button"
+            onClick={onTestAlarm}
+            style={{
+              ...styles.testButton,
+              backgroundColor: isTestingAlarm ? '#FEE2E2' : '#F1F5F9',
+              color: isTestingAlarm ? '#B91C1C' : '#334155',
+              border: `1px solid ${isTestingAlarm ? '#FCA5A5' : '#CBD5E1'}`,
+            }}
+            title="Tes Suara Alarm Jangan Berisik"
+          >
+            {isTestingAlarm ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="4" y="4" width="16" height="16" rx="2" />
+                </svg>
+                <span>Hentikan Suara</span>
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+                <span>Tes Alarm Suara</span>
+              </>
+            )}
+          </button>
+        )}
+
         <div
           style={{
             ...styles.statusBadge,
@@ -190,6 +226,18 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     transition: 'background-color 0.15s ease, transform 0.1s ease',
+  },
+  testButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontWeight: 600,
+    borderRadius: '8px',
+    cursor: 'pointer',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+    transition: 'all 0.15s ease',
   },
 };
 
