@@ -1,15 +1,11 @@
+"use client";
+
+import React from 'react';
 import type { ConnectionStatus } from '../types/audio';
 
-/**
- * Properti (Props) untuk komponen Header
- * Dibuat fleksibel agar memudahkan Zaki menghubungkan WebSocket nanti
- */
 interface HeaderProps {
-  /** Status koneksi ke server/mikrofon (default: 'disconnected') */
   status?: ConnectionStatus;
-  /** Status apakah perekaman live sedang aktif */
   isMonitoring?: boolean;
-  /** Fungsi callback ketika tombol aksi diklik */
   onToggleMonitoring?: () => void;
 }
 
@@ -18,81 +14,117 @@ export const Header: React.FC<HeaderProps> = ({
   isMonitoring = false,
   onToggleMonitoring,
 }) => {
-  // Menentukan warna dan label badge berdasarkan status koneksi
   const getStatusBadge = () => {
     switch (status) {
       case 'connected':
-        return { color: 'var(--status-safe)', text: 'Live Monitoring' };
+        return {
+          bg: '#ECFDF5',
+          border: '#86EFAC',
+          color: '#047857',
+          dot: '#10B981',
+          text: 'Live Monitoring'
+        };
       case 'connecting':
-        return { color: 'var(--color-accent)', text: 'Menghubungkan...' };
+        return {
+          bg: '#EFF6FF',
+          border: '#93C5FD',
+          color: '#1D4ED8',
+          dot: '#2563EB',
+          text: 'Menghubungkan...'
+        };
       case 'error':
-        return { color: 'var(--status-danger)', text: 'Koneksi Terputus' };
+        return {
+          bg: '#FEF2F2',
+          border: '#FCA5A5',
+          color: '#B91C1C',
+          dot: '#EF4444',
+          text: 'Koneksi Terputus'
+        };
       case 'disconnected':
       default:
-        return { color: 'var(--text-secondary)', text: 'Disconnected' };
+        return {
+          bg: '#F8FAFC',
+          border: '#CBD5E1',
+          color: '#334155',
+          dot: '#64748B',
+          text: 'Standby'
+        };
     }
   };
 
-  const badgeInfo = getStatusBadge();
+  const badge = getStatusBadge();
 
   return (
     <header style={styles.headerContainer}>
-      {/* 1. Bagian Kiri: Judul dan Deskripsi Sistem */}
       <div style={styles.branding}>
         <div style={styles.iconWrapper}>
-          {/* Ikon Audio Wave Sederhana (SVG Native) */}
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2v20M17 5v14M7 8v8M2 11v2M22 11v2" />
           </svg>
         </div>
         <div>
           <h1 style={styles.title}>Audio Surveillance System</h1>
-          <p style={styles.subtitle}>Real-Time Audio Monitoring</p>
+          <p style={styles.subtitle}>Sistem Pemantauan Akustik & Deteksi Kebisingan Real-Time</p>
         </div>
       </div>
 
-      {/* 2. Bagian Kanan: Indikator Status & Tombol Kontrol */}
       <div style={styles.actions}>
-        {/* Indikator Status Koneksi */}
-        <div style={styles.statusBadge}>
+        <div
+          style={{
+            ...styles.statusBadge,
+            backgroundColor: badge.bg,
+            border: `1px solid ${badge.border}`,
+          }}
+        >
           <span
             style={{
               ...styles.statusDot,
-              backgroundColor: badgeInfo.color,
-              boxShadow: status === 'connected' ? `0 0 8px ${badgeInfo.color}` : 'none',
+              backgroundColor: badge.dot,
             }}
           />
-          <span style={styles.statusText}>{badgeInfo.text}</span>
+          <span style={{ ...styles.statusText, color: badge.color }}>{badge.text}</span>
         </div>
 
-        {/* Tombol Start / Stop Monitoring */}
         <button
           type="button"
           onClick={onToggleMonitoring}
           style={{
             ...styles.button,
-            backgroundColor: isMonitoring ? 'var(--status-danger)' : 'var(--color-accent)',
+            backgroundColor: isMonitoring ? '#DC2626' : '#0F172A',
           }}
         >
-          {isMonitoring ? 'Stop Monitoring' : 'Start Monitoring'}
+          {isMonitoring ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+              </svg>
+              <span>Stop Monitoring</span>
+            </>
+          ) : (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              <span>Start Monitoring</span>
+            </>
+          )}
         </button>
       </div>
     </header>
   );
 };
 
-// Objek Styling dengan Palet Warna Dark Modern
 const styles: { [key: string]: React.CSSProperties } = {
   headerContainer: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '16px 24px',
-    backgroundColor: 'var(--bg-card)',
-    border: '1px solid var(--border-card)',
-    borderRadius: '12px',
+    padding: '18px 26px',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #CBD5E1',
+    borderRadius: '14px',
     marginBottom: '24px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)',
+    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.07), 0 1px 3px rgba(15, 23, 42, 0.04)',
   },
   branding: {
     display: 'flex',
@@ -103,58 +135,61 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '40px',
-    height: '40px',
-    borderRadius: '8px',
-    backgroundColor: 'rgba(59, 130, 246, 0.15)', // Biru aksen transparan
-    color: 'var(--color-accent)',
+    width: '42px',
+    height: '42px',
+    borderRadius: '10px',
+    backgroundColor: '#EFF6FF',
+    color: '#1D4ED8',
+    border: '1px solid #BFDBFE',
   },
   title: {
     margin: 0,
     fontSize: '20px',
-    fontWeight: 600,
-    color: 'var(--text-primary)',
-    letterSpacing: '-0.3px',
+    fontWeight: 700,
+    color: '#0F172A',
+    letterSpacing: '-0.4px',
   },
   subtitle: {
     margin: '3px 0 0 0',
     fontSize: '13px',
-    color: 'var(--text-secondary)',
+    fontWeight: 500,
+    color: '#334155',
   },
   actions: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '12px',
   },
   statusBadge: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '6px 12px',
-    borderRadius: '20px',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)', // Latar Midnight Navy halus
-    border: '1px solid var(--border-card)',
+    padding: '7px 15px',
+    borderRadius: '999px',
+    transition: 'all 0.2s ease',
   },
   statusDot: {
     width: '8px',
     height: '8px',
     borderRadius: '50%',
-    transition: 'background-color 0.3s ease',
   },
   statusText: {
-    fontSize: '12px',
-    fontWeight: 500,
-    color: 'var(--text-primary)',
+    fontSize: '13px',
+    fontWeight: 600,
   },
   button: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
     padding: '9px 18px',
     fontSize: '13px',
     fontWeight: 600,
-    color: '#F8FAFC',
+    color: '#FFFFFF',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
-    transition: 'opacity 0.2s ease, transform 0.1s ease',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'background-color 0.15s ease, transform 0.1s ease',
   },
 };
 

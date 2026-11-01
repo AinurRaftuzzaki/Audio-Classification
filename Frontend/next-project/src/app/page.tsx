@@ -256,12 +256,12 @@ export default function Home() {
   return (
     <div className="dashboard-container">
       <Header status={connectionStatus} isMonitoring={isMonitoring} onToggleMonitoring={handleToggleMonitoring} />
-      <main className="dashboard-main-grid" style={{ marginTop: '24px', gap: '24px' }}>
-        <section className="dashboard-left-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <main className="dashboard-main-grid">
+        <section className="dashboard-left-col">
           <StatusCard label={currentLabel} confidence={currentConfidence} isMonitoring={isMonitoring} />
           <AudioVisualizer audioData={audioData} isMonitoring={isMonitoring} />
         </section>
-        <section className="dashboard-right-col" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <section className="dashboard-right-col">
           <MetricsCard features={currentFeatures} />
           <DetectionLog logs={logs} onClearLogs={() => setLogs([])} />
         </section>
