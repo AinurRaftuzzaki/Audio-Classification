@@ -52,45 +52,49 @@ async def websocket_audio_endpoint(websocket: WebSocket):
             # Menerima data biner (PCM Float32) dari frontend 
             data = await websocket.receive_bytes()
             
-            # Konversi byte ke NumPy array
-            audio_array = np.frombuffer(data, dtype=np.float32)
-            
-            if len(audio_array) < 1024:
-                await websocket.send_json({"error": "Data audio terlalu pendek"})
-                continue
-            
-            # Ekstraksi 16 Fitur Audio
-            sr = 22050
-            rms = float(np.mean(librosa.feature.rms(y=audio_array)))
-            centroid = float(np.mean(librosa.feature.spectral_centroid(y=audio_array, sr=sr)))
-            zcr = float(np.mean(librosa.feature.zero_crossing_rate(y=audio_array)))
-            mfcc = librosa.feature.mfcc(y=audio_array, sr=sr, n_mfcc=13)
-            mfcc_means = [float(np.mean(c)) for c in mfcc]
-            
-            # Gabungkan fitur dan terapkan StandardScaler
-            feature_vector = [rms, centroid, zcr] + mfcc_means
-            scaled_features = scaler.transform(np.array(feature_vector).reshape(1, -1))
-            
-            # Inferensi Model Random Forest
-            pred_code = int(rf_model.predict(scaled_features)[0])
-            pred_label = label_encoder.inverse_transform([pred_code])[0]
-            pred_proba = rf_model.predict_proba(scaled_features)[0]
-            confidence = float(pred_proba[pred_code] * 100)
-            
-            # Kirim respons ke frontend
-            await websocket.send_json({
-                "label": pred_label,
-                "confidence": confidence,
-                "features": {
-                    "rms": rms,
-                    "centroid": centroid,
-                    "zcr": zcr
-                }
-            })
+            try:
+                # Konversi byte ke NumPy array
+                audio_array = np.frombuffer(data, dtype=np.float32)
+                
+                if len(audio_array) < 1024:
+                    await websocket.send_json({"error": "Data audio terlalu pendek"})
+                    continue
+                
+                # Ekstraksi 16 Fitur Audio
+                sr = 22050
+                rms = float(np.mean(librosa.feature.rms(y=audio_array)))
+                centroid = float(np.mean(librosa.feature.spectral_centroid(y=audio_array, sr=sr)))
+                zcr = float(np.mean(librosa.feature.zero_crossing_rate(y=audio_array)))
+                mfcc = librosa.feature.mfcc(y=audio_array, sr=sr, n_mfcc=13)
+                mfcc_means = [float(np.mean(c)) for c in mfcc]
+                
+                # Gabungkan fitur dan terapkan StandardScaler
+                feature_vector = [rms, centroid, zcr] + mfcc_means
+                scaled_features = scaler.transform(np.array(feature_vector).reshape(1, -1))
+                
+                # Inferensi Model Random Forest
+                pred_code = int(rf_model.predict(scaled_features)[0])
+                pred_label = label_encoder.inverse_transform([pred_code])[0]
+                pred_proba = rf_model.predict_proba(scaled_features)[0]
+                confidence = float(pred_proba[pred_code] * 100)
+                
+                # Kirim respons ke frontend
+                await websocket.send_json({
+                    "label": pred_label,
+                    "confidence": confidence,
+                    "features": {
+                        "rms": rms,
+                        "centroid": centroid,
+                        "zcr": zcr
+                    }
+                })
+            except Exception as chunk_err:
+                print(f"[ERROR] Gagal memproses frame audio: {chunk_err}")
+                await websocket.send_json({"error": str(chunk_err)})
     except WebSocketDisconnect:
         print("[INFO] Client terputus dari WebSocket.")
     except Exception as e:
-        print(f"[ERROR] Terjadi kesalahan: {e}")
+        print(f"[ERROR] Terjadi kesalahan WebSocket: {e}")
 
 # 7. Serve Static Files Frontend (Production Build)
 DIST_DIR = os.path.join(BASE_DIR, 'dist')

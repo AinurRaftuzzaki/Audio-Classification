@@ -1,14 +1,10 @@
+"use client";
+
 import React from 'react';
 
-/**
- * Properti untuk StatusCard
- */
 interface StatusCardProps {
-  /** Hasil klasifikasi ('berisik_biasa', 'berisik_banget', atau 'non_berisik') */
   label?: string;
-  /** Persentase tingkat keyakinan model (0 - 100 atau 0.0 - 1.0) */
   confidence?: number;
-  /** Status apakah pemantauan audio sedang berjalan */
   isMonitoring?: boolean;
 }
 
@@ -19,30 +15,27 @@ export const StatusCard: React.FC<StatusCardProps> = ({
 }) => {
   const normalizedLabel = label?.toLowerCase() || '';
 
-  // Evaluasi 3 tingkat status kebisingan (kompatibel dengan '_' maupun '-')
   const isQuiet = normalizedLabel.includes('non_berisik') || normalizedLabel.includes('non-berisik') || normalizedLabel.includes('aman');
   const isVeryNoisy = normalizedLabel.includes('banget');
   const isModerateNoisy = !isQuiet && !isVeryNoisy && normalizedLabel.includes('berisik');
   
   const hasResult = (isQuiet || isVeryNoisy || isModerateNoisy) && confidence !== undefined;
 
-  // Normalisasi persentase confidence (jika dari backend bernilai 0.0 - 1.0, kalikan 100)
   const displayConfidence = confidence !== undefined 
     ? (confidence <= 1 ? confidence * 100 : confidence) 
     : 0;
 
-  // Konfigurasi visual berdasarkan state saat ini
   const getThemeConfig = () => {
     if (!isMonitoring) {
       return {
-        title: 'SISTEM STANDBY',
-        subtitle: 'Sistem tidak aktif. Silakan klik "Start Monitoring" untuk memulai.',
-        badgeColor: 'var(--text-secondary)',
-        bgColor: 'rgba(148, 163, 184, 0.08)',
-        borderColor: 'var(--border-card)',
-        glow: 'none',
+        title: 'Sistem Standby',
+        subtitle: 'Sistem pemantauan belum aktif. Silakan klik tombol "Start Monitoring" untuk memulai deteksi.',
+        badgeColor: '#475569',
+        bgColor: '#F8FAFC',
+        borderColor: '#CBD5E1',
+        iconBg: '#FFFFFF',
         icon: (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -53,14 +46,14 @@ export const StatusCard: React.FC<StatusCardProps> = ({
 
     if (!hasResult) {
       return {
-        title: 'MENDENGARKAN SUARA...',
+        title: 'Mendengarkan Sinyal Audio...',
         subtitle: 'Mengumpulkan sampel audio jendela 1 detik untuk dianalisis oleh server...',
-        badgeColor: 'var(--color-accent)',
-        bgColor: 'rgba(56, 189, 248, 0.1)',
-        borderColor: 'rgba(56, 189, 248, 0.3)',
-        glow: 'none',
+        badgeColor: '#1D4ED8',
+        bgColor: '#EFF6FF',
+        borderColor: '#93C5FD',
+        iconBg: '#FFFFFF',
         icon: (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
             <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
             <line x1="12" y1="19" x2="12" y2="22" />
@@ -69,17 +62,17 @@ export const StatusCard: React.FC<StatusCardProps> = ({
       };
     }
 
-    // LEVEL 2: SANGAT BERISIK (Merah Menyala + Sirine MP3)
+    // LEVEL 2: SANGAT BERISIK (Merah)
     if (isVeryNoisy) {
       return {
-        title: 'SANGAT BERISIK (BAHAYA)',
-        subtitle: 'Peringatan Keras: Kebisingan ekstrem terdeteksi! Alarm sirine diaktifkan.',
-        badgeColor: '#ef4444',
-        bgColor: 'rgba(239, 68, 68, 0.16)',
-        borderColor: 'rgba(239, 68, 68, 0.5)',
-        glow: '0 0 20px rgba(239, 68, 68, 0.25)',
+        title: 'Kebisingan Tinggi (Bahaya)',
+        subtitle: 'Peringatan: Tingkat kebisingan terdeteksi di lingkungan. Alarm suara "Harap Tenang, Jangan Berisik" aktif.',
+        badgeColor: '#B91C1C',
+        bgColor: '#FEF2F2',
+        borderColor: '#FCA5A5',
+        iconBg: '#FFFFFF',
         icon: (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -88,17 +81,17 @@ export const StatusCard: React.FC<StatusCardProps> = ({
       };
     }
 
-    // LEVEL 1: BERISIK BIASA (Kuning Oranye + Beep Peringatan)
+    // LEVEL 1: BERISIK BIASA (Kuning / Oranye)
     if (isModerateNoisy) {
       return {
-        title: 'BERISIK BIASA (WARNING)',
-        subtitle: 'Perhatian: Terdeteksi suara bising sedang di sekitar ruangan.',
-        badgeColor: '#f59e0b',
-        bgColor: 'rgba(245, 158, 11, 0.14)',
-        borderColor: 'rgba(245, 158, 11, 0.45)',
-        glow: 'none',
+        title: 'Kebisingan Sedang (Perhatian)',
+        subtitle: 'Perhatian: Terdeteksi suara bising moderat di sekitar ruangan.',
+        badgeColor: '#B45309',
+        bgColor: '#FFFBEB',
+        borderColor: '#FCD34D',
+        iconBg: '#FFFFFF',
         icon: (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
             <line x1="12" y1="9" x2="12" y2="13" />
             <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -109,14 +102,14 @@ export const StatusCard: React.FC<StatusCardProps> = ({
 
     // LEVEL 0: AMAN / TENANG (Hijau)
     return {
-      title: 'AMAN (TENANG)',
-      subtitle: 'Kondisi suara lingkungan terpantau tenang dan dalam batas wajar.',
-      badgeColor: '#10b981',
-      bgColor: 'rgba(16, 185, 129, 0.12)',
-      borderColor: 'rgba(16, 185, 129, 0.35)',
-      glow: 'none',
+      title: 'Kondisi Tenang (Aman)',
+      subtitle: 'Kondisi suara lingkungan terpantau tenang dan berada dalam batas normal.',
+      badgeColor: '#047857',
+      bgColor: '#ECFDF5',
+      borderColor: '#86EFAC',
+      iconBg: '#FFFFFF',
       icon: (
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           <path d="m9 12 2 2 4-4" />
         </svg>
@@ -127,15 +120,9 @@ export const StatusCard: React.FC<StatusCardProps> = ({
   const theme = getThemeConfig();
 
   return (
-    <div
-      style={{
-        ...styles.card,
-        borderColor: theme.borderColor,
-        boxShadow: theme.glow,
-      }}
-    >
+    <div style={styles.card}>
       <div style={styles.cardHeader}>
-        <span style={styles.cardSectionTitle}>STATUS DETEKSI LINGKUNGAN</span>
+        <span style={styles.cardSectionTitle}>Status Deteksi Lingkungan</span>
         {hasResult && (
           <span style={styles.confidenceBadge}>
             Confidence: <strong>{displayConfidence.toFixed(1)}%</strong>
@@ -143,8 +130,14 @@ export const StatusCard: React.FC<StatusCardProps> = ({
         )}
       </div>
 
-      <div style={{ ...styles.contentWrapper, backgroundColor: theme.bgColor }}>
-        <div style={{ ...styles.iconContainer, color: theme.badgeColor }}>
+      <div
+        style={{
+          ...styles.contentWrapper,
+          backgroundColor: theme.bgColor,
+          border: `1.5px solid ${theme.borderColor}`,
+        }}
+      >
+        <div style={{ ...styles.iconContainer, color: theme.badgeColor, backgroundColor: theme.iconBg }}>
           {theme.icon}
         </div>
         <div style={styles.textContainer}>
@@ -155,7 +148,6 @@ export const StatusCard: React.FC<StatusCardProps> = ({
         </div>
       </div>
 
-      {/* Progress Bar Confidence */}
       {hasResult && (
         <div style={styles.confidenceBarWrapper}>
           <div style={styles.confidenceBarTrack}>
@@ -175,12 +167,11 @@ export const StatusCard: React.FC<StatusCardProps> = ({
 
 const styles: { [key: string]: React.CSSProperties } = {
   card: {
-    backgroundColor: 'var(--bg-card)',
-    border: '1px solid var(--border-card)',
-    borderRadius: '16px',
-    padding: '24px',
-    transition: 'all 0.3s ease',
-    marginBottom: '0px',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #CBD5E1',
+    borderRadius: '14px',
+    padding: '22px 26px',
+    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.07), 0 1px 3px rgba(15, 23, 42, 0.04)',
   },
   cardHeader: {
     display: 'flex',
@@ -191,52 +182,56 @@ const styles: { [key: string]: React.CSSProperties } = {
   cardSectionTitle: {
     fontSize: '12px',
     fontWeight: 700,
-    letterSpacing: '1px',
-    color: 'var(--text-secondary)',
+    letterSpacing: '0.6px',
+    color: '#334155',
     textTransform: 'uppercase',
   },
   confidenceBadge: {
-    fontSize: '12px',
-    color: 'var(--text-primary)',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    padding: '4px 10px',
-    borderRadius: '12px',
-    border: '1px solid var(--border-card)',
+    fontSize: '13px',
+    fontWeight: 600,
+    color: '#0F172A',
+    backgroundColor: '#F1F5F9',
+    padding: '5px 12px',
+    borderRadius: '8px',
+    border: '1px solid #CBD5E1',
+    fontVariantNumeric: 'tabular-nums',
   },
   contentWrapper: {
     display: 'flex',
     alignItems: 'center',
-    gap: '20px',
-    padding: '20px',
-    borderRadius: '12px',
-    transition: 'background-color 0.3s ease',
+    gap: '18px',
+    padding: '18px 20px',
+    borderRadius: '10px',
+    transition: 'all 0.2s ease',
   },
   iconContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '64px',
-    height: '64px',
+    width: '52px',
+    height: '52px',
     borderRadius: '12px',
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    border: '1px solid #CBD5E1',
     flexShrink: 0,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
   },
   textContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: '3px',
   },
   statusTitle: {
     margin: 0,
-    fontSize: '24px',
-    fontWeight: 800,
-    letterSpacing: '-0.5px',
+    fontSize: '18px',
+    fontWeight: 700,
+    letterSpacing: '-0.3px',
   },
   statusSubtitle: {
     margin: 0,
     fontSize: '14px',
-    color: 'var(--text-secondary)',
-    lineHeight: '1.4',
+    fontWeight: 500,
+    color: '#334155',
+    lineHeight: '1.5',
   },
   confidenceBarWrapper: {
     marginTop: '16px',
@@ -244,13 +239,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   confidenceBarTrack: {
     width: '100%',
     height: '6px',
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    borderRadius: '3px',
+    backgroundColor: '#E2E8F0',
+    borderRadius: '999px',
     overflow: 'hidden',
   },
   confidenceBarFill: {
     height: '100%',
-    transition: 'width 0.4s ease, background-color 0.3s ease',
+    transition: 'width 0.3s ease, background-color 0.2s ease',
+    borderRadius: '999px',
   },
 };
 

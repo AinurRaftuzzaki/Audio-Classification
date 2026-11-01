@@ -172,18 +172,30 @@ HTML_TEMPLATE = """
             if (!chkSoundAlert.checked) return;
             try {
                 const now = Date.now();
-                if (now - lastAlertTime < 1000) return;
+                if (now - lastAlertTime < 4000) return; // beri jeda agar kalimat selesai
                 lastAlertTime = now;
+
+                // 1. Chime beep awal
                 const ctx = audioContext || new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator(), gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(900, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.25);
-                gain.gain.setValueAtTime(0.4, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(650, ctx.currentTime);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
                 osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + 0.25);
-            } catch (err) { console.error("Audio beep error:", err); }
+                osc.start(); osc.stop(ctx.currentTime + 0.4);
+
+                // 2. Suara ucapan peringatan "Jangan Berisik"
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance("Perhatian! Harap tenang, jangan berisik.");
+                    utter.lang = 'id-ID';
+                    utter.rate = 1.0;
+                    utter.pitch = 1.0;
+                    window.speechSynthesis.speak(utter);
+                }
+            } catch (err) { console.error("Audio alert error:", err); }
         }
 
         async function startLiveAudio() {
