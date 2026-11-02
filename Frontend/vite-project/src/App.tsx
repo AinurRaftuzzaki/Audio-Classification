@@ -131,8 +131,10 @@ export function App() {
       
       // Inisialisasi koneksi WebSocket
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const isLocalDev = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '5173';
-      const wsHost = isLocalDev ? '127.0.0.1:8000' : window.location.host;
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      // Jika di localhost dan bukan container FastAPI (8000/8009), sambungkan ke backend di 127.0.0.1:8000
+      const isLocalDevServer = isLocal && window.location.port !== '8000' && window.location.port !== '8009';
+      const wsHost = isLocalDevServer ? '127.0.0.1:8000' : window.location.host;
       const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/audio`);
       wsRef.current = ws;
 
@@ -163,35 +165,48 @@ export function App() {
           setCurrentFeatures(data.features);
           const rmsVal = data.features?.rms ?? 0;
           const rfLabel = data.label; // 'berisik' atau 'non_berisik' dari backend
-          
-          let displayLabel = 'non_berisik';
-          let displayConfidence = 5;
+          const modelConfidence = typeof data.confidence === 'number'
+            ? Math.round(data.confidence)
+            : 90;
 
-          // 1. Filter mutlak untuk hening / kipas pelan
-          if (rmsVal < 0.008) {
-            noisyStreakRef.current = 0;
-            displayLabel = 'non_berisik';
-            displayConfidence = Math.round((rmsVal / 0.008) * 10);
-          } 
-          // 2. Jika model mendeteksi suara 'berisik'
-          else if (rfLabel === 'berisik') {
-            noisyStreakRef.current += 1;
-            
-            // Butuh 3 detik berturut-turut (streak >= 3) untuk memicu alarm bahaya MP3
-            if (noisyStreakRef.current >= 3) {
-              displayLabel = 'berisik_banget';
-              displayConfidence = 85 + Math.min(15, noisyStreakRef.current * 2);
-            } else {
-              displayLabel = 'berisik_biasa';
-              displayConfidence = 25 + (noisyStreakRef.current * 10);
-            }
-          } 
-          // 3. Jika model mendeteksi 'non_berisik'
-          else {
-            noisyStreakRef.current = 0;
-            displayLabel = 'non_berisik';
-            displayConfidence = 15;
+          // 1. Probabilitas kebisingan dari Model Random Forest (0% - 100%)
+          const modelNoisyProb = rfLabel === 'berisik' 
+            ? modelConfidence 
+            : Math.max(0, 100 - modelConfidence);
+
+          // 2. Intensitas energi suara fisik dari mikrofon (RMS) diskalakan secara responsif (0% - 100%)
+          const rmsScore = Math.min(100, Math.round((rmsVal / 0.045) * 80));
+
+          // 3. Gabungkan sinyal model AI (55%) dan intensitas fisik RMS (45%) agar bergerak dinamis & responsif
+          let noiseLevel: number;
+          if (rmsVal < 0.005) {
+            // Hening total: bergerak alami antara 2% - 12%
+            noiseLevel = Math.max(2, Math.min(12, Math.round((rmsVal / 0.005) * 10)));
+          } else {
+            const blended = Math.round(0.55 * modelNoisyProb + 0.45 * rmsScore);
+            noiseLevel = Math.max(5, Math.min(100, blended));
           }
+
+          // 4. Klasifikasi Kategori & Alarm:
+          let displayLabel = 'non_berisik';
+
+          // TENANG / AMAN: < 25% dan RMS rendah
+          if (noiseLevel < 25 && rmsVal < 0.015) {
+            noisyStreakRef.current = 0;
+            displayLabel = 'non_berisik';
+          } 
+          // BAHAYA / SANGAT BERISIK: >= 75% atau streak berisik >= 3 detik atau suara keras (RMS >= 0.04)
+          else if (noiseLevel >= 75 || noisyStreakRef.current >= 3 || rmsVal >= 0.040) {
+            noisyStreakRef.current += 1;
+            displayLabel = 'berisik_banget';
+          } 
+          // KEBISINGAN SEDANG / PERHATIAN: 25% - 74%
+          else {
+            noisyStreakRef.current += 1;
+            displayLabel = 'berisik_biasa';
+          }
+
+          const displayConfidence = noiseLevel;
 
           // Eksekusi status UI & Alarm
           setCurrentLabel(displayLabel);

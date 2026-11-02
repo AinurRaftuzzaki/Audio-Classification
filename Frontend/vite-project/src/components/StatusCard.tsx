@@ -125,7 +125,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({
         <span style={styles.cardSectionTitle}>Status Deteksi Lingkungan</span>
         {hasResult && (
           <span style={styles.confidenceBadge}>
-            Confidence: <strong>{displayConfidence.toFixed(1)}%</strong>
+            Tingkat Kebisingan: <strong>{displayConfidence.toFixed(1)}%</strong>
           </span>
         )}
       </div>
