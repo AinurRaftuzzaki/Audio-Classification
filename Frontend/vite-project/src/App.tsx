@@ -131,7 +131,8 @@ export function App() {
       
       // Inisialisasi koneksi WebSocket
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsHost = window.location.port !== '8000' ? '127.0.0.1:8000' : window.location.host;
+      const isLocalDev = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '5173';
+      const wsHost = isLocalDev ? '127.0.0.1:8000' : window.location.host;
       const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/audio`);
       wsRef.current = ws;
 

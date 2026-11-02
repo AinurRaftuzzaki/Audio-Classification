@@ -126,7 +126,21 @@ st.sidebar.caption("Proyek Sains Data - Audio Classification System")
 if menu == "⚡ Live Audio Classifier (Deteksi Langsung & Bunyi)":
     st.markdown('<div class="main-header">⚡ Live Audio Detection & Alarm System</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Mikrofon aktif mendengarkan secara langsung tanpa henti. Saat terjadi kebisingan selama jendela waktu yang ditentukan, <b>sistem langsung mendeteksi, mengklasifikasikan, dan membunyikan alarm suara!</b></div>', unsafe_allow_html=True)
-    components.iframe("http://localhost:3000", height=760, scrolling=True)
+    
+    # Deteksi otomatis port frontend yang sedang aktif (Vite: 5173, Docker: 8009, Flask: 5000, Backend: 8000)
+    frontend_url = "http://localhost:5173"
+    if is_port_in_use(5173):
+        frontend_url = "http://localhost:5173"
+    elif is_port_in_use(8009):
+        frontend_url = "http://localhost:8009"
+    elif is_port_in_use(5000):
+        frontend_url = "http://localhost:5000"
+    elif is_port_in_use(8000):
+        frontend_url = "http://localhost:8000"
+    else:
+        st.warning("⚠️ **Server frontend belum terdeteksi aktif.** Pastikan Anda telah menjalankan `npm run dev` di folder `Frontend/vite-project` atau menjalankan container Docker.")
+    
+    components.iframe(frontend_url, height=760, scrolling=True)
 
 # ==============================================================================
 # MENU 2: EKSPLORASI DATASET
